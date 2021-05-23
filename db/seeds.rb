@@ -1,28 +1,67 @@
-# This file should contain all the record creation needed to seed the database with its default values.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Examples:
-#
-#   movies = Movie.create([{ name: 'Star Wars' }, { name: 'Lord of the Rings' }])
-#   Character.create(name: 'Luke', movie: movies.first)
-
-# employee_list = [
-#     [ 'bold', 'bold@email', 'erdene', '123', 0],
-#     [ 'bat', 'bat@email', 'saihan', '123', 0],
-#     [ 'dulguun', 'dulguun@email', 'tuguldur', '123', 0],
-#     [ 'erdene', 'erdene@email', 'bat', '123', 0]
-# ]
-
-# employee_list.each do | name, email, last_name, password, balance|
-#     User.create( first_name: name, email: email, last_name: last_name, password: password, balance: balance)
+# User seeder
+# 10.times do
+#     User.create({
+#         email: Faker::Internet.email,
+#         password: Devise::Encryptor.digest(User, '123'),
+#         encrypted_password: Devise::Encryptor.digest(User, '123'),
+#         first_name: Faker::Name.first_name,
+#         last_name: Faker::Name.last_name,
+#         balance: Faker::Number.number(digits: 6)
+#     })
 # end
 
-10.times do
-    User.create({
-        email: Faker::Internet.email,
-        password: '123',
-        first_name: Faker::Name.first_name,
-        last_name: Faker::Name.last_name,
-        balance: Faker::Number.number(digits: 6)
-    })
-end
+# ---------------------------------------------
+# Category seeder
+# 10.times do
+#     Category.create({
+#             category_name: Faker::JapaneseMedia::OnePiece.location,
+#             category_type: Faker::Number.between(from: 0, to: 1),
+#             is_default: Faker::Number.between(from: 0, to: 1)
+#         })
+#     end
+    
+# ---------------------------------------------
+# Transaction seeder
+# 10.times do
+#     Transaction.create({
+#         category_id: Faker::Number.between(from:1, to: 10),
+#         user_id: Faker::Number.between(from:1, to: 10),
+#         transaction_type: Faker::Boolean.boolean,
+#         transaction_date: Faker::Date.between(from: 1.year.ago, to: Date.today),
+#         amount: Faker::Number.between(from: 0, to: 1000000, ),
+#         is_repeat: Faker::Boolean.boolean,
+#         note: Faker::Lorem.sentence(word_count: 3)
+#     })
+# end
+# User Category seeder
+# 10.times do
+#     UserCategory.create({
+#         category_id: Faker::Number.between(from:1, to: 10),
+#         user_id: Faker::Number.between(from:1, to: 10),
+#     })
+# end
+
+
+# Ajillahgui seeder
+# 10.times do
+#     @user = User.create!({
+#         email: Faker::Internet.email,
+#         password: Devise::Encryptor.digest(User, '123'),
+#         encrypted_password: Devise::Encryptor.digest(User, '123'),
+#         first_name: Faker::Name.first_name,
+#         last_name: Faker::Name.last_name,
+#         balance: Faker::Number.number(digits: 6)
+#     })
+#     rand(1..3).times do
+#         trans = Transaction.create!({
+    
+#             category_id: Faker::Number.between(from:1, to: 10),
+#             user_id: @user,
+#             transaction_type: Faker::Boolean.boolean,
+#             transaction_date: Faker::Date.between(from: 1.year.ago, to: Date.today),
+#             amount: Faker::Number.between(from: 0, to: 1000000, ),
+#             is_repeat: Faker::Boolean.boolean,
+#             note: Faker::Lorem.sentence(word_count: 3)
+#         })
+#     end
+# end
