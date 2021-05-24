@@ -1,14 +1,14 @@
 # User seeder
-# 10.times do
-#     User.create({
-#         email: Faker::Internet.email,
-#         password: Devise::Encryptor.digest(User, '123'),
-#         encrypted_password: Devise::Encryptor.digest(User, '123'),
-#         first_name: Faker::Name.first_name,
-#         last_name: Faker::Name.last_name,
-#         balance: Faker::Number.number(digits: 6)
-#     })
-# end
+10.times do
+    User.create({
+        email: Faker::Internet.email,
+        password: Devise::Encryptor.digest(User, '123'),
+        encrypted_password: Devise::Encryptor.digest(User, '123'),
+        first_name: Faker::Name.first_name,
+        last_name: Faker::Name.last_name,
+        balance: Faker::Number.number(digits: 6)
+    })
+end
 
 # ---------------------------------------------
 # Category seeder
@@ -34,12 +34,12 @@
 #     })
 # end
 # User Category seeder
-# 10.times do
-#     UserCategory.create({
-#         category_id: Faker::Number.between(from:1, to: 10),
-#         user_id: Faker::Number.between(from:1, to: 10),
-#     })
-# end
+10.times do
+    UserCategory.create({
+        category_id: Faker::Number.between(from:1, to: 10),
+        user_id: Faker::Number.between(from:1, to: 10),
+    })
+end
 
 
 # Ajillahgui seeder

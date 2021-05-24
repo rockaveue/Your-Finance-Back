@@ -8,11 +8,11 @@ Rails.application.routes.draw do
       resources :users, except: :index do
         resources :transactions do
           # users/{id}/transactions/{id}/{category_id}
-          get "/:category_id", to: "category#show"
+          get "category", to: "categories#show"
         end
         resources :user_categories do
           # users/{id}/user_categories/{id}/{category_id}
-          get "/category", to: "category#show"
+          # get "/category", to: "category#show"
         end
         # get "/transactions", to: "transactions#index"
       end

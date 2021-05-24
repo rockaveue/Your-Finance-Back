@@ -21,7 +21,7 @@ gem 'puma', '~> 5.0'
 gem 'bootsnap', '>= 1.4.4', require: false
 
 # Use Active Model has_secure_password
-gem 'bcrypt'
+# gem 'bcrypt'
 
 # Authentication
 gem 'devise'

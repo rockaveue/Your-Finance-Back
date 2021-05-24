@@ -14,6 +14,7 @@ class ApplicationController < ActionController::API
                 head :unauthorized
             end
         end
+            # head: unauthorized
     end
 
     # Хэрэв нэвтрээгүй бол unauthorized алдааг буцаана
@@ -26,7 +27,6 @@ class ApplicationController < ActionController::API
     def current_user
         @current_user ||= super || User.find(@current_user_id)
     end
-
     
 
 end

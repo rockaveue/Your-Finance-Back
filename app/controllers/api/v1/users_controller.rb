@@ -9,6 +9,7 @@ class Api::V1::UsersController < ApplicationController
     # end
 
     # GET /users/:id
+    # Хэрэглэгчийн сонгох
     def show
         user = User.find(params[:id])
         # cache middleware
@@ -17,6 +18,7 @@ class Api::V1::UsersController < ApplicationController
         end
     end
     # POST /users
+    # Хэрэглэгч нэмэх
     def create
         user = User.new(user_params)
         if user.save
@@ -28,15 +30,17 @@ class Api::V1::UsersController < ApplicationController
         end 
     end
     # PUT /users/:id
+    # Хэрэглэгч өөрчлөх
     def update
         user = User.find(params[:id])
         if user.update(user_params)
-            render json: {message: "Өөрчлөгдсөн", data: user}
+            render json: user
         else
             render json: {message: 'Алдаа гарлаа', data: user.errors}, status: :unprocessable_entity
         end
     end
     # DELETE /users/:id
+    # Хэрэглэгч устгах
     def destroy
         user = User.find(params[:id])
         user.destroy
