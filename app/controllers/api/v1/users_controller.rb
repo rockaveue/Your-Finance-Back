@@ -22,8 +22,8 @@ class Api::V1::UsersController < ApplicationController
     def create
         user = User.new(user_params)
         if user.save
-            token = user.generate_jwt
-            render json: token.to_json
+            # token = user.generate_jwt
+            render json: {status: 'user created', data: user.to_json}
             # render json: {message: 'Хадгалагдсан', data: user}
         else
             render json: {errors: 'Алдаа гарлаа', data: user.errors}, status: :unprocessable_entity

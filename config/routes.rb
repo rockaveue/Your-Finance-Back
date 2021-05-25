@@ -1,10 +1,20 @@
 Rails.application.routes.draw do
-  devise_for :users
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
   namespace 'api' do
     namespace 'v1' do
-      resources :sessions, only: [:create, :destroy]
-      resources :registrations, only: [:create, :destroy]
+      devise_for :users,
+                  path: 'users',
+                  path_names: {
+                    sign_in: 'login',
+                    sign_out: 'logout',
+                    registration: 'signup'
+                  },
+                  controllers: {
+                    sessions: 'api/v1/users/sessions',
+                    registrations: 'api/v1/users/registrations'
+                  }
+      # resources :sessions, only: [:create, :destroy]
+      # resources :registrations, only: [:create, :destroy]
       resources :users, except: :index do
         resources :transactions do
           # users/{id}/transactions/{id}/{category_id}
@@ -16,6 +26,8 @@ Rails.application.routes.draw do
         end
         # get "/transactions", to: "transactions#index"
       end
+      # Default Category авах route
+      get "default_category", to: "categories#defaultAllCategory"
     end
   end
 end

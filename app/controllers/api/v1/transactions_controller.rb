@@ -1,12 +1,14 @@
+
 class Api::V1::TransactionsController < ApplicationController
-    before_action :process_token
+    before_action :decode_token
     
     # GET /users/:id/transactions
     # Хэрэглэгчийн гүйлгээ авах
     def index
-        # ApplicationController.process_token
+        # Pagy::VARS[:items]  = 2
         user = User.find_by_id(params[:user_id])
-        transactions = Transaction.where(:user_id => user.id)
+        transactions = Transaction.select('*').joins(:category).where(:user_id => user.id)
+
         render json: transactions
     end
 
