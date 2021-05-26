@@ -34,12 +34,12 @@ end
 #     })
 # end
 # User Category seeder
-10.times do
-    UserCategory.create({
-        category_id: Faker::Number.between(from:1, to: 10),
-        user_id: Faker::Number.between(from:1, to: 10),
-    })
-end
+# 10.times do
+#     UserCategory.create({
+#         category_id: Faker::Number.between(from:1, to: 10),
+#         user_id: Faker::Number.between(from:1, to: 10),
+#     })
+# end
 
 
 # Ajillahgui seeder

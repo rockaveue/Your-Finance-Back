@@ -1,6 +1,6 @@
 
 class Api::V1::TransactionsController < ApplicationController
-    before_action :decode_token
+    # before_action :decode_token
     
     # GET /users/:id/transactions
     # Хэрэглэгчийн гүйлгээ авах

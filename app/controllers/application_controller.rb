@@ -12,20 +12,21 @@ class ApplicationController < ActionController::API
     
     protected
 
-    def generate_new_token
-        response.headers['Authorization'] = 'Bearer '+ Warden::JWTAuth::UserEncoder.new.call(self, :user, nil).first
-    end
+    # def generate_new_token
+    #     response.headers['Authorization'] = 'Bearer '+ Warden::JWTAuth::UserEncoder.new.call(self, :user, nil).first
+    # end
 
-    def decode_token
-        if request.headers['Authorization'].present?
-            jwt = request.headers['Authorization'].split(' ')[1]
-            # render json: jwt
-            user = Warden::JWTAuth::UserDecoder.new.call(jwt, :user, nil)
-            render json: user
-            # @current_user = user
-            # success!(user)
-        end
-    end
+    # def decode_token
+    #     if request.headers['Authorization'].present?
+    #         jwt = request.headers['Authorization'].split(' ')[1]
+    #         # render json: jwt
+    #         user = Warden::JWTAuth::UserDecoder.new.call(jwt, :user, nil)
+    #         render json: user
+    #         # @current_user = user
+    #         # success!(user)
+    #     end
+    #     # render :nothing, status: :ok
+    # end
   
     private
     # # authorization header-аас шалгах хэсэг байвал кодыг тайлна
