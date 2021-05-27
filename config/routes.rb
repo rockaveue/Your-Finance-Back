@@ -18,12 +18,14 @@ Rails.application.routes.draw do
       resources :users, except: :index do
         resources :transactions do
           # users/{id}/transactions/{id}/{category_id}
-          get "category", to: "categories#show"
+          get "category", to: "categories#transactionCategory"
         end
-        resources :user_categories do
-          # users/{id}/user_categories/{id}/{category_id}
-          # get "/category", to: "category#show"
-        end
+        # get "user_categories", to: "user_categories#index"
+        resources :categories
+        post "categories_by_type", to: "categories#getCategoryByType"
+        post "get_type_amount_by_date", to: "categories#getAmountByType"
+        post "get_data_by_date", to: "transactions#getDataByDate"
+        post "get_data_by_between_date", to: "transactions#getDataByBetweenDate"
         # get "/transactions", to: "transactions#index"
       end
       # Default Category авах route
