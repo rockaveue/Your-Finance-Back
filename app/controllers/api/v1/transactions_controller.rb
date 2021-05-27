@@ -25,7 +25,15 @@ class Api::V1::TransactionsController < ApplicationController
     # POST /users/:id/transaction
     # 
     def create
+        user = User.find(params[:user_id])
         transaction = Transaction.new(transaction_params)
+        if user.id == transaction.user_id
+            if transaction.transaction_type == true
+                #
+            else
+                #
+            end
+        end
         if transaction.save
             render json: transaction.to_json
         else
@@ -36,6 +44,7 @@ class Api::V1::TransactionsController < ApplicationController
     # PUT /users/:user_id/transaction/:id
     # Хэрэглэгчийн гүйлгээ өөрчлөх
     def update
+        user = User.find(params[:user_id])
         transaction = Transaction.find(params[:id])
         if transaction.update(transaction_params)
             render json: transaction
@@ -45,9 +54,27 @@ class Api::V1::TransactionsController < ApplicationController
     end
 
     def destroy
+        user = User.find(params[:user_id])
         transaction = Transaction.find(params[:id])
         transaction.destroy
         render json: transaction
+    end
+
+    def date_transactions
+        
+        income = Transaction.select('*').where(:transaction_date => params[:transaction_date])
+        .where(:transaction_type => 1)
+
+        expense = Transaction.select('*').where(:transaction_date => params[:transaction_date])
+        .where(:transaction_type => 0)
+
+        transactions = {
+            "income" => income,
+            "expense" => expense,
+        }
+
+        render json:transactions
+
     end
 
     private

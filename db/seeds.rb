@@ -12,27 +12,27 @@ end
 
 # ---------------------------------------------
 # Category seeder
-# 10.times do
-#     Category.create({
-#             category_name: Faker::JapaneseMedia::OnePiece.location,
-#             category_type: Faker::Number.between(from: 0, to: 1),
-#             is_default: Faker::Number.between(from: 0, to: 1)
-#         })
-#     end
+10.times do
+    Category.create({
+            category_name: Faker::JapaneseMedia::OnePiece.location,
+            category_type: Faker::Number.between(from: 0, to: 1),
+            is_default: Faker::Number.between(from: 0, to: 1)
+        })
+    end
     
 # ---------------------------------------------
-# Transaction seeder
-# 10.times do
-#     Transaction.create({
-#         category_id: Faker::Number.between(from:1, to: 10),
-#         user_id: Faker::Number.between(from:1, to: 10),
-#         transaction_type: Faker::Boolean.boolean,
-#         transaction_date: Faker::Date.between(from: 1.year.ago, to: Date.today),
-#         amount: Faker::Number.between(from: 0, to: 1000000, ),
-#         is_repeat: Faker::Boolean.boolean,
-#         note: Faker::Lorem.sentence(word_count: 3)
-#     })
-# end
+# # Transaction seeder
+10.times do
+    Transaction.create({
+        category_id: Faker::Number.between(from:1, to: 10),
+        user_id: Faker::Number.between(from:1, to: 10),
+        transaction_type: Faker::Boolean.boolean,
+        transaction_date: Faker::Date.between(from: 1.year.ago, to: Date.today),
+        amount: Faker::Number.between(from: 0, to: 1000000, ),
+        is_repeat: Faker::Boolean.boolean,
+        note: Faker::Lorem.sentence(word_count: 3)
+    })
+end
 # User Category seeder
 10.times do
     UserCategory.create({

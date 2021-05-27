@@ -178,7 +178,6 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
-  bcrypt
   bootsnap (>= 1.4.4)
   byebug
   devise
