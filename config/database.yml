@@ -7,6 +7,7 @@
 default: &default
   adapter: mysql2
   url: <%= ENV['CLEARDB_DATABASE_URL'] %>
+  database: heroku_034e960d5b20c88
   pool: 5
   timeout: 5000
   username: b1aa6fc15f928f
