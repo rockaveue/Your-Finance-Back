@@ -27,22 +27,69 @@ class Api::V1::TransactionsController < ApplicationController
     # POST /users/:id/transaction
     # Гүйлгээ нэмэх
     def create
+        user = User.find(params[:user_id])
         transaction = Transaction.new(transaction_params)
-        if transaction.save
-            render json: transaction.to_json
-        else
-            render json: transaction.errors, status: :unprocessable_entity
-        end 
+        transaction.user_id = params[:user_id]
+        # render json: transaction    
+        user_balance = user.balance
+        ActiveRecord::Base.transaction do
+            if transaction.save
+                if params[:transaction_type] == true
+                    user_balance += params[:amount]
+                else
+                    user_balance -= params[:amount]
+                end
+                user.balance = user_balance
+                if user.save
+                    render json: transaction.to_json
+                else
+                    render json: user.errors.full_messages
+                end
+            else
+                render json: transaction.errors, status: :unprocessable_entity
+            end
+        rescue ActiveRecord::RecordInvalid
+            render json: {"status": "error"}, status: :unprocessable_entity
+        end
     end
     
     # PUT /users/:user_id/transaction/:id
     # Хэрэглэгчийн гүйлгээ өөрчлөх
     def update
         transaction = Transaction.find(params[:id])
-        if transaction.update(transaction_params)
-            render json: transaction
-        else
-            render json: transaction.errors, status: :unprocessable_entity
+        
+        ActiveRecord::Base.transaction do
+            last_amount = transaction.amount
+            last_type = transaction.transaction_type
+            if transaction.update(transaction_params)
+
+                user = User.find(params[:user_id])
+                # хэрэглэгчийн баланс
+                user_balance = user.balance
+                # хуучин төрөл болон дүн
+                # хуучин төрөл шинэ төрөлтэй ижил байвал
+                if last_type == params[:transaction_type]
+                    # төрөл нь орлого бол
+                    if params[:transaction_type] == true
+                        # одоогийн дүнгээс хуучин дүнг хасаж баланс дээр нэмнэ
+                        user.update(balance: user_balance + (params[:amount] - last_amount))
+                    else
+                        user.update(balance: user_balance - (params[:amount] - last_amount))
+                    end
+                else
+                    if params[:transaction_type] == true
+                        user.update(balance: user_balance + (params[:amount] + last_amount))
+                    else
+                        user.update(balance: user_balance - (params[:amount] + last_amount))
+                    end
+                end
+                
+                render json: transaction.to_json
+            else
+                render json: transaction.errors, status: :unprocessable_entity
+            end
+        rescue ActiveRecord::RecordInvalid
+            render json: {"status": "error"}, status: :unprocessable_entity
         end
     end
 
@@ -50,8 +97,19 @@ class Api::V1::TransactionsController < ApplicationController
     # Хэрэглэгчийн гүйлгээ устгах
     def destroy
         transaction = Transaction.find(params[:id])
-        transaction.destroy
-        render json: transaction
+        user = User.find(params[:user_id])
+        
+        ActiveRecord::Base.transaction do
+            if transaction.transaction_type == true
+                user.update(balance: user.balance - transaction.amount)
+            else
+                user.update(balance: user.balance + transaction.amount)
+            end
+            transaction.destroy
+            render json: transaction
+        rescue ActiveRecord::RecordInvalid
+            render json: {"status": "error"}, status: :unprocessable_entity
+        end
     end
 
 
@@ -164,6 +222,6 @@ class Api::V1::TransactionsController < ApplicationController
 
     private
     def transaction_params
-        params.require(:transaction).permit(:category_id, :user_id, :transaction_type, :transaction_date, :amount, :is_repeat, :note)
+        params.require(:transaction).permit(:category_id, :transaction_type, :transaction_date, :amount, :is_repeat, :note)
     end
 end
