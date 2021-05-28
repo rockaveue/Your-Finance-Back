@@ -7,7 +7,6 @@
 default: &default
   adapter: mysql2
   url: <%= ENV['CLEARDB_DATABASE_URL'] %>
-  database: heroku_034e960d5b20c88
   pool: 5
   timeout: 5000
   username: b1aa6fc15f928f
@@ -15,15 +14,16 @@ default: &default
 
 development:
   <<: *default
-  database: development
+  # database: development
+  database: heroku_034e960d5b20c88
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
 # Do not set this db to the same as development or production.
-test:
-  <<: *default
-  database: test
+# test:
+#   <<: *default
+#   database: test
 
-production:
-  <<: *default
-  database: production
+# production:
+#   <<: *default
+#   database: production
