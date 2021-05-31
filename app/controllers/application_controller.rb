@@ -18,15 +18,17 @@ class ApplicationController < ActionController::API
         response.headers['Authorization'] = 'Bearer '+ Warden::JWTAuth::UserEncoder.new.call(current_api_v1_user, :api_v1_user, nil).first
     end
 
+    # Blacklist рүү нэмэх
     def add_to_blacklist
-        decoded = decode_token
-        # user = User.find_by_id(decoded[0]['sub'])
-        jti =  decoded[0]['jti']
+        decoded_token = decode_token
+        # jti ялгаж авах
+        jti =  decoded_token[0]['jti']
+
         old_token = JwtBlacklist.new(jti: jti)
         old_token.save
-        # render json: JwtBlacklist.jwt_revoked?(decoded, user)
     end
     
+    # JWT тайлах функц
     def decode_token
         decoder = JWT::Decode.new(
             request.headers['Authorization'].split(' ')[1],
@@ -36,10 +38,12 @@ class ApplicationController < ActionController::API
         )
         decoder.decode_segments
     end
-    #  params[:user_id].present? Байвал ажиллана
+
+    # Simple authorization
+    # params[:user_id] байгаа газар ашиглана
     def authorization
-        decoded = decode_token
-        if params[:user_id] != decoded[0]['sub']
+        decoded_token = decode_token
+        if params[:user_id] != decoded_token[0]['sub']
             raise "Хандах эрхгүй хэрэглэгч"
         end
     end
