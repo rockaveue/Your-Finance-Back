@@ -11,7 +11,8 @@ Rails.application.routes.draw do
                   },
                   controllers: {
                     sessions: 'api/v1/users/sessions',
-                    registrations: 'api/v1/users/registrations'
+                    registrations: 'api/v1/users/registrations',
+                    confirmations: 'api/v1/confirmations'
                   }
       # resources :sessions, only: [:create, :destroy]
       # resources :registrations, only: [:create, :destroy]
