@@ -4,7 +4,8 @@ class Api::V1::Users::RegistrationsController < Devise::RegistrationsController
     # параметрүүдийг бүгдийг авах бүртгүүлэх функц
     def create
       resource = build_resource(sign_up_params)
-  
+      
+      
       if resource.save!
         register_success && return if resource.persisted?
       else

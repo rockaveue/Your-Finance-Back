@@ -28,6 +28,11 @@ Rails.application.routes.draw do
         post "get_data_by_date", to: "transactions#getDataByDate"
         post "get_data_by_between_date", to: "transactions#getDataByBetweenDate"
         # get "/transactions", to: "transactions#index"
+
+        
+        get 'confirmation/sent', to: 'confirmations#sent'
+        get 'confirmation/:confirmation_token', to: 'confirmations#show'
+        patch 'confirmation', to: 'confirmations#create'
       end
       # Default Category авах route
       get "default_category", to: "categories#defaultAllCategory"
