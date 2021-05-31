@@ -56,6 +56,7 @@ class Api::V1::TransactionsController < ApplicationController
     # PUT /users/:user_id/transaction/:id
     # Хэрэглэгчийн гүйлгээ өөрчлөх
     def update
+        user = User.find(params[:user_id])
         transaction = Transaction.find(params[:id])
         
         ActiveRecord::Base.transaction do
@@ -96,6 +97,7 @@ class Api::V1::TransactionsController < ApplicationController
     # DELETE /users/:user_id/transaction/:id
     # Хэрэглэгчийн гүйлгээ устгах
     def destroy
+        user = User.find(params[:user_id])
         transaction = Transaction.find(params[:id])
         user = User.find(params[:user_id])
         
@@ -218,6 +220,23 @@ class Api::V1::TransactionsController < ApplicationController
         # balance
 
         render json: {"income" => [income, total_income], "expense" => [expense, total_expense], "balance" => balanceArray}
+    end
+
+    def date_transactions
+        
+        income = Transaction.select('*').where(:transaction_date => params[:transaction_date])
+        .where(:transaction_type => 1)
+
+        expense = Transaction.select('*').where(:transaction_date => params[:transaction_date])
+        .where(:transaction_type => 0)
+
+        transactions = {
+            "income" => income,
+            "expense" => expense,
+        }
+
+        render json:transactions
+
     end
 
     private

@@ -19,6 +19,15 @@ Rails.application.routes.draw do
         resources :transactions do
           # users/{id}/transactions/{id}/{category_id}
           get "category", to: "categories#transactionCategory"
+          
+        end
+        resource :transactions do
+          post "date_transactions", to: "transactions#date_transactions"
+        end
+        
+        resources :user_categories do
+          # users/{id}/user_categories/{id}/{category_id}
+          # get "/category", to: "category#show"
         end
         # get "user_categories", to: "user_categories#index"
         resources :categories
