@@ -1,12 +1,7 @@
 class Api::V1::UsersController < ApplicationController
+    before_action :add_to_blacklist
 
     # respond_to :json
-    # GET /users
-    # def index
-    #     users = User.all
-    #     render json: {data: users}
-    #     # json_response(@users)
-    # end
 
     # GET /users/:id
     # Хэрэглэгчийн сонгох
@@ -17,18 +12,7 @@ class Api::V1::UsersController < ApplicationController
             render json: user
         end
     end
-    # POST /users
-    # Хэрэглэгч нэмэх
-    def create
-        user = User.new(user_params)
-        if user.save
-            # token = user.generate_jwt
-            render json: {status: 'user created', data: user.to_json}
-            # render json: {message: 'Хадгалагдсан', data: user}
-        else
-            render json: {errors: 'Алдаа гарлаа', data: user.errors}, status: :unprocessable_entity
-        end 
-    end
+    
     # PUT /users/:id
     # Хэрэглэгч өөрчлөх
     def update
