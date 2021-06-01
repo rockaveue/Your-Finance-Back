@@ -6,7 +6,8 @@ class Api::V1::Users::RegistrationsController < Devise::RegistrationsController
       resource = build_resource(sign_up_params)
       
       
-      if resource.save!
+      if resource.save
+        UserMailer.welcome_email(resource).deliver
         register_success && return if resource.persisted?
       else
         register_failed
