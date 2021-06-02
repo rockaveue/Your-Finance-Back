@@ -7,7 +7,7 @@ class Api::V1::TransactionsController < ApplicationController
     # Хэрэглэгчийн бүх гүйлгээ авах
     def index
         # Pagy::VARS[:items]  = 2
-        user = User.find_by_id(params[:user_id])
+        user = User.find_by_id(params[:user_id]).where(is_deleted: false)
         transactions = Transaction.select('*').joins(:category).where(:user_id => user.id)
 
         render json: transactions
@@ -16,7 +16,7 @@ class Api::V1::TransactionsController < ApplicationController
     # GET /users/:user_id/transaction/:id
     # Хэрэглэгчийн гүйлгээ сонгох
     def show
-        user = User.find(params[:user_id])
+        user = User.find(params[:user_id]).where(is_deleted: false)
         transaction = Transaction.find(params[:id])
         if user.id == transaction.user_id
             render json: transaction
@@ -89,8 +89,6 @@ class Api::V1::TransactionsController < ApplicationController
             else
                 render json: transaction.errors, status: :unprocessable_entity
             end
-        rescue ActiveRecord::RecordInvalid
-            render json: {"status": "error"}, status: :unprocessable_entity
         end
     end
 
@@ -106,10 +104,12 @@ class Api::V1::TransactionsController < ApplicationController
             else
                 user.update(balance: user.balance + transaction.amount)
             end
-            transaction.destroy
-            render json: transaction
-        rescue ActiveRecord::RecordInvalid
-            render json: {"status": "error"}, status: :unprocessable_entity
+            
+            if transaction.update(is_deleted: true)
+                render json: {message: "Устгагдлаа", transaction: transaction}
+            else
+                render json: transaction.errors
+            end
         end
     end
 
@@ -223,6 +223,6 @@ class Api::V1::TransactionsController < ApplicationController
 
     private
     def transaction_params
-        params.require(:transaction).permit(:category_id, :transaction_type, :transaction_date, :amount, :is_repeat, :note)
+        params.require(:transaction).permit(:category_id, :is_income, :transaction_date, :amount, :is_repeat, :note)
     end
 end

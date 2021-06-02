@@ -33,28 +33,30 @@ class Api::V1::CategoriesController < ApplicationController
     # POST users/:user_id/categories
     # Категор нэмэх
     def create
-        category = Category.new(category_params)
-        if category.save
-            # token = user.generate_jwt
-            userCategory = UserCategory.new(
-                :category_id => category.id,
-                :user_id => params[:user_id]
-            )
-            if userCategory.save
-                render json: {status: 'category created', data: category.to_json}    
-            else            
-                render json: {errors: 'Алдаа гарлаа', data: userCategory.errors}, status: :unprocessable_entity
-            end
-        else
-            render json: {errors: 'Алдаа гарлаа', data: category.errors}, status: :unprocessable_entity
-        end 
+        ActiveRecord::Base.transaction do
+            category = Category.new(category_params)
+            if category.save
+                # token = user.generate_jwt
+                userCategory = UserCategory.new(
+                    :category_id => category.id,
+                    :user_id => params[:user_id]
+                )
+                if userCategory.save
+                    render json: {status: 'category created', data: category.to_json}    
+                else            
+                    render json: {errors: 'Алдаа гарлаа', data: userCategory.errors}, status: :unprocessable_entity
+                end
+            else
+                render json: {errors: 'Алдаа гарлаа', data: category.errors}, status: :unprocessable_entity
+            end 
+        end
     end
 
     # PUT /users/:user_id/categories/:id
     # Категор өөрчлөх
     def update
         category = Category.find(params[:id])
-        if categoyr.update(category_params)
+        if category.update(category_params)
             render json: category
         else
             render json: category.errors, status: :unprocessable_entity
@@ -65,8 +67,12 @@ class Api::V1::CategoriesController < ApplicationController
     # Категор устгах
     def destroy
         category = Category.find(params[:id])
-        category.destroy
-        render json: category
+        
+        if category.update(is_deleted: true)
+            render json: {message: "Устгагдлаа", category: category}
+        else
+            render json: category.errors
+        end
     end
 
 
@@ -74,13 +80,17 @@ class Api::V1::CategoriesController < ApplicationController
     # Өдрөөр нийт дүнг ангиллаар авах
     def getAmountByType
         # render json: params[:transaction_date]
-        # categor = Category.select('*').joins(:transactions)
-        category = Transaction.select('categories.id, categories.category_name, SUM(transactions.amount) as amount, transactions.transaction_date').joins(:category).where(:transaction_date => params[:transaction_date], :user_id => params[:user_id]).group(:category_id)
+        # category = Category.select('*').joins(:transactions)
+        category = Transaction.select('categories.id, categories.category_name, SUM(transactions.amount) as amount, transactions.transaction_date')
+            .joins(:category)
+            .where( :transaction_date => params[:transaction_date], 
+                    :user_id => params[:user_id])
+            .group(:category_id)
         render json: category
     end
     private
 
     def category_params       
-        params.require(:category).permit(:category_name, :category_type, :is_default)
+        params.require(:category).permit(:category_name, :is_income, :is_default)
     end
 end
