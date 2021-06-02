@@ -1,14 +1,14 @@
 # User seeder
-# 10.times do
-#     User.create({
-#         email: Faker::Internet.email,
-#         password: Devise::Encryptor.digest(User, '123'),
-#         encrypted_password: Devise::Encryptor.digest(User, '123'),
-#         first_name: Faker::Name.first_name,
-#         last_name: Faker::Name.last_name,
-#         balance: Faker::Number.number(digits: 6)
-#     })
-# end
+10.times do
+    User.create({
+        email: Faker::Internet.email,
+        password: Devise::Encryptor.digest(User, '123'),
+        encrypted_password: Devise::Encryptor.digest(User, '123'),
+        first_name: Faker::Name.first_name,
+        last_name: Faker::Name.last_name,
+        balance: Faker::Number.number(digits: 6)
+    })
+end
 
 # ---------------------------------------------
 # Category seeder
@@ -20,8 +20,8 @@
 #         })
 #     end
     
-# ---------------------------------------------
-# Transaction seeder
+# # ---------------------------------------------
+# # # Transaction seeder
 # 10.times do
 #     Transaction.create({
 #         category_id: Faker::Number.between(from:1, to: 10),
@@ -34,11 +34,13 @@
 #     })
 # end
 # User Category seeder
-# 10.times do
-#     UserCategory.create({
-#         category_id: Faker::Number.between(from:1, to: 10),
-#         user_id: Faker::Number.between(from:1, to: 10),
-#     })
+# (1..10).each do |j|
+#     (1..5).each do |i|
+#         UserCategory.create({
+#             category_id: i,
+#             user_id: j,
+#         })
+#     end
 # end
 
 
