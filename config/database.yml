@@ -6,14 +6,18 @@
 #
 default: &default
   adapter: mysql2
+  # url: <%= ENV['CLEARDB_DATABASE_URL'] %>
   pool: 5
   timeout: 5000
   username: root
   password: root
+  # username: b1aa6fc15f928f
+  # password: bbfd0266
 
 development:
   <<: *default
   database: development
+  # database: heroku_034e960d5b20c88
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
