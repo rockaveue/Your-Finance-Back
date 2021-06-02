@@ -1,7 +1,9 @@
 
 class Api::V1::TransactionsController < ApplicationController
     before_action :add_to_blacklist
-    before_action :authorization
+    before_action :generate_new_token
+    before_action :transaction_authorization
+    
     # GET /users/:user_id/transactions
     # Хэрэглэгчийн бүх гүйлгээ авах
     def index

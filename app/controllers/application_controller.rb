@@ -3,7 +3,7 @@ class ApplicationController < ActionController::API
 
     respond_to :json
     before_action :authenticate_api_v1_user!
-    before_action :generate_new_token
+    
     # before_action :add_to_blacklist
 
 
@@ -41,10 +41,18 @@ class ApplicationController < ActionController::API
 
     # Simple authorization
     # params[:user_id] байгаа газар ашиглана
-    def authorization
+    def transaction_authorization
         decoded_token = decode_token
         if params[:user_id] != decoded_token[0]['sub']
             raise "Хандах эрхгүй хэрэглэгч"
         end
     end
+
+    def user_authorization
+        decoded_token = decode_token
+        if params[:id] != decoded_token[0]['sub']
+            raise "Хандах эрхгүй хэрэглэгч"
+        end
+    end
+
 end
