@@ -1,8 +1,7 @@
 
 class Api::V1::TransactionsController < ApplicationController
-    before_action :add_to_blacklist
-    before_action :generate_new_token
-    before_action :authorization
+    # before_action :authorization
+    # before_action :generate_new_token
     
     # GET /users/:user_id/transactions
     # Хэрэглэгчийн бүх гүйлгээ авах
@@ -97,8 +96,6 @@ class Api::V1::TransactionsController < ApplicationController
             else
                 render json: transaction.errors, status: :unprocessable_entity
             end
-        rescue ActiveRecord::RecordInvalid
-            render json: {"status": "error"}, status: :unprocessable_entity
         end
     end
 
@@ -115,10 +112,12 @@ class Api::V1::TransactionsController < ApplicationController
             else
                 user.update(balance: user.balance + transaction.amount)
             end
-            transaction.update(is_deleted: true)
-            render json: transaction
-        rescue ActiveRecord::RecordInvalid
-            render json: {"status": "error"}, status: :unprocessable_entity
+            
+            if transaction.update(is_deleted: true)
+                render json: {message: "Устгагдлаа", transaction: transaction}
+            else
+                render json: transaction.errors
+            end
         end
     end
 
