@@ -27,7 +27,7 @@ Rails.application.routes.draw do
         end
         resources :categories do
           collection do
-            post :getAmountByType
+            post :getCategoryAmountByDate
             post :getCategory
           end
         end

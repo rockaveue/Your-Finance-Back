@@ -1,5 +1,5 @@
 class Api::V1::Users::SessionsController < Devise::SessionsController
-  TODO skip authenticate_user
+  skip_before_action :generate_new_token
   respond_to :json
   
   private

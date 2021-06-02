@@ -1,8 +1,7 @@
 include Pagy::Backend
 class ApplicationController < ActionController::API
   respond_to :json
-  # TODO test it
-  before_action :authenticate_user!
+  before_action :authenticate_api_v1_user!
   before_action :generate_new_token
 
   def jwt_subject
@@ -41,23 +40,14 @@ class ApplicationController < ActionController::API
   # Simple authorization
   # params[:user_id] байгаа газар ашиглана
   def authorization
-    decoded_token = decode_token
-    if params[:user_id] != decoded_token[0]['sub']
-      # TODO respond 401 status
-      raise "Хандах эрхгүй хэрэглэгч"
+    if Integer(params[:user_id]) != current_api_v1_user.id
+      render plain: "unauthorized", status: :unauthorized
     end
   end
 
   def user_authorization
-    decoded_token = decode_token
-    if params[:id] != decoded_token[0]['sub']
-      # TODO respond 401 status
-      raise "Хандах эрхгүй хэрэглэгч"
+    if Integer(params[:user_id]) != current_api_v1_user.id
+      render plain: "unauthorized", status: :unauthorized
     end
-
-    # if params[:id] != current_user.id
-    #   # TODO respond 401 status
-    #   raise "Хандах эрхгүй хэрэглэгч"
-    # end
   end
 end
