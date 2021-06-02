@@ -2,7 +2,7 @@ include Pagy::Backend
 class ApplicationController < ActionController::API
 
     respond_to :json
-    before_action :authenticate_api_v1_user!
+    # before_action :authenticate_api_v1_user!
     # before_action :add_to_blacklist
 
 
@@ -13,8 +13,9 @@ class ApplicationController < ActionController::API
     protected
 
     # Шинэ токен үүсгэх
-    def generate_new_token        
+    def generate_new_token
         response.headers['Authorization'] = 'Bearer '+ Warden::JWTAuth::UserEncoder.new.call(current_api_v1_user, :api_v1_user, nil).first
+        add_to_blacklist
     end
 
     # Blacklist рүү нэмэх

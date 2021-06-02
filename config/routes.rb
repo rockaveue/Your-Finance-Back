@@ -12,7 +12,6 @@ Rails.application.routes.draw do
                   controllers: {
                     sessions: 'api/v1/users/sessions',
                     registrations: 'api/v1/users/registrations',
-                    confirmations: 'api/v1/confirmations'
                   }
       # resources :sessions, only: [:create, :destroy]
       # resources :registrations, only: [:create, :destroy]
@@ -26,7 +25,7 @@ Rails.application.routes.draw do
         resources :categories do
           collection do
             post :getAmountByType
-            post :getCategoryByType
+            post :getCategory
           end
         end
       end
@@ -34,7 +33,3 @@ Rails.application.routes.draw do
     end
   end
 end
-
-# get 'confirmation/sent', to: 'confirmations#sent'
-# get 'confirmation/:confirmation_token', to: 'confirmations#show'
-# patch 'confirmation', to: 'confirmations#create'

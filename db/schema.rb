@@ -10,14 +10,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_05_31_023605) do
+ActiveRecord::Schema.define(version: 2021_06_02_035544) do
 
   create_table "categories", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "category_name"
-    t.boolean "category_type"
+    t.boolean "is_income"
     t.boolean "is_default"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.boolean "is_deleted"
   end
 
   create_table "jwt_blacklists", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -31,13 +32,14 @@ ActiveRecord::Schema.define(version: 2021_05_31_023605) do
   create_table "transactions", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "category_id", null: false
     t.bigint "user_id", null: false
-    t.boolean "transaction_type"
+    t.boolean "is_income"
     t.date "transaction_date"
     t.float "amount"
     t.boolean "is_repeat"
     t.string "note"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.boolean "is_deleted"
     t.index ["category_id"], name: "index_transactions_on_category_id"
     t.index ["user_id"], name: "index_transactions_on_user_id"
   end
