@@ -64,8 +64,10 @@ class Api::V1::TransactionsController < ApplicationController
     # Хэрэглэгчийн гүйлгээ өөрчлөх
     def update
         user = User.find(params[:user_id])
+        return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
         transaction = Transaction.find(params[:id])
-        
+        return render json: { 'message' => 'Хэрэглэгчийн гүйлгээ олдсонгүй'}, status: 404 unless transaction
+
         ActiveRecord::Base.transaction do
             last_amount = transaction.amount
             last_type = transaction.transaction_type
@@ -103,8 +105,9 @@ class Api::V1::TransactionsController < ApplicationController
     # Хэрэглэгчийн гүйлгээ устгах
     def soft_delete
         user = User.find(params[:user_id])
+        return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
         transaction = Transaction.find(params[:id])
-        user = User.find(params[:user_id])
+        return render json: { 'message' => 'Хэрэглэгчийн гүйлгээ олдсонгүй'}, status: 404 unless transaction
         
         ActiveRecord::Base.transaction do
             if transaction.transaction_type == true
