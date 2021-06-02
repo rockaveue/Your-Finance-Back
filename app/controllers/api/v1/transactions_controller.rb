@@ -1,8 +1,8 @@
 
 class Api::V1::TransactionsController < ApplicationController
-    # before_action :decode_token
-    
-    # GET /users/:id/transactions
+    before_action :add_to_blacklist
+    before_action :authorization
+    # GET /users/:user_id/transactions
     # Хэрэглэгчийн бүх гүйлгээ авах
     def index
         # Pagy::VARS[:items]  = 2
@@ -12,7 +12,7 @@ class Api::V1::TransactionsController < ApplicationController
         render json: transactions
     end
 
-    # GET /users/:id/transaction/:id
+    # GET /users/:user_id/transaction/:id
     # Хэрэглэгчийн гүйлгээ сонгох
     def show
         user = User.find(params[:user_id])
@@ -24,7 +24,7 @@ class Api::V1::TransactionsController < ApplicationController
         end
     end
     
-    # POST /users/:id/transaction
+    # POST /users/:user_id/transaction
     # Гүйлгээ нэмэх
     def create
         user = User.find(params[:user_id])

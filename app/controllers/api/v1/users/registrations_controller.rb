@@ -5,7 +5,7 @@ class Api::V1::Users::RegistrationsController < Devise::RegistrationsController
     def create
       resource = build_resource(sign_up_params)
   
-      if resource.save!
+      if resource.save
         register_success && return if resource.persisted?
       else
         register_failed
@@ -21,11 +21,11 @@ class Api::V1::Users::RegistrationsController < Devise::RegistrationsController
 
 
     def register_success
-      render json: { message: 'Signed up successfully.' }
+      render json: { message: 'Амжилттай бүртгүүллээ.' }
     end
   
     def register_failed
-      render json: { message: "Something went wrong." }
+      render json: { message: "Бүртгүүлэхэд асуудал гарлаа." }
     end
 
     def sign_up_params
