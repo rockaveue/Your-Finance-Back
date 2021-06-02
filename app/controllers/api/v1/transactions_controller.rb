@@ -96,7 +96,7 @@ class Api::V1::TransactionsController < ApplicationController
                 
                 render json: transaction.to_json
             else
-                render json: transaction.errors, status: :unprocessable_entity
+                render json: transaction.errors.full_messages, status: :unprocessable_entity
             end
         end
     end
@@ -119,7 +119,7 @@ class Api::V1::TransactionsController < ApplicationController
             if transaction.update(is_deleted: true)
                 render json: {message: "Устгагдлаа", transaction: transaction}
             else
-                render json: transaction.errors
+                render json: transaction.errors.full_messages
             end
         end
     end
@@ -209,7 +209,8 @@ class Api::V1::TransactionsController < ApplicationController
             .where('DATE(transaction_date) BETWEEN ? AND ?', params[:date_from], params[:date_to]).as_json(:except => :id)
         
         user = User.find(params[:user_id])
-            
+        return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
+
         transactions = Transaction.select('*')
         .where(:user_id => params[:user_id])
         .where('DATE(transaction_date) BETWEEN ? AND ?', params[:date_from], params[:date_to])
@@ -248,6 +249,8 @@ class Api::V1::TransactionsController < ApplicationController
         render json:transactions
 
     end
+
+    
 
     private
     def transaction_params

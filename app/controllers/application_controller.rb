@@ -2,12 +2,7 @@ include Pagy::Backend
 class ApplicationController < ActionController::API
 
     respond_to :json
-<<<<<<< HEAD
-    before_action :authenticate_api_v1_user!
-    
-=======
     # before_action :authenticate_api_v1_user!
->>>>>>> 8035f81550d9f11e27f649fe985bc8df4256df32
     # before_action :add_to_blacklist
 
 
