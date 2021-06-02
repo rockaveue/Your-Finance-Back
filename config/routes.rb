@@ -18,24 +18,23 @@ Rails.application.routes.draw do
       # resources :registrations, only: [:create, :destroy]
       resources :users, except: :index do
         resources :transactions do
-          # users/{id}/transactions/{id}/{category_id}
-          get "category", to: "categories#transactionCategory"
+          collection do
+            post :getDataByDate
+            post :getDataByBetweenDate
+          end
         end
-        # get "user_categories", to: "user_categories#index"
-        resources :categories
-        post "categories_by_type", to: "categories#getCategoryByType"
-        post "get_type_amount_by_date", to: "categories#getAmountByType"
-        post "get_data_by_date", to: "transactions#getDataByDate"
-        post "get_data_by_between_date", to: "transactions#getDataByBetweenDate"
-        # get "/transactions", to: "transactions#index"
-
-        
-        get 'confirmation/sent', to: 'confirmations#sent'
-        get 'confirmation/:confirmation_token', to: 'confirmations#show'
-        patch 'confirmation', to: 'confirmations#create'
+        resources :categories do
+          collection do
+            post :getAmountByType
+            post :getCategoryByType
+          end
+        end
       end
-      # Default Category авах route
-      get "default_category", to: "categories#defaultAllCategory"
+      get 'defaultCategory', to: 'categories#defaultAllCategory'
     end
   end
 end
+
+# get 'confirmation/sent', to: 'confirmations#sent'
+# get 'confirmation/:confirmation_token', to: 'confirmations#show'
+# patch 'confirmation', to: 'confirmations#create'
