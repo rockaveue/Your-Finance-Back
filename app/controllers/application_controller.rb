@@ -41,16 +41,11 @@ class ApplicationController < ActionController::API
 
     # Simple authorization
     # params[:user_id] байгаа газар ашиглана
-    def transaction_authorization
+    def authorization
         decoded_token = decode_token
-        if params[:user_id] != decoded_token[0]['sub']
-            raise "Хандах эрхгүй хэрэглэгч"
-        end
-    end
+        if params[:user_id] == decoded_token[0]['sub'] || params[:id] == decoded_token[0]['sub']
 
-    def user_authorization
-        decoded_token = decode_token
-        if params[:id] != decoded_token[0]['sub']
+        else
             raise "Хандах эрхгүй хэрэглэгч"
         end
     end

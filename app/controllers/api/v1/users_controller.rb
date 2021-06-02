@@ -1,7 +1,7 @@
 class Api::V1::UsersController < ApplicationController
     before_action :add_to_blacklist
     before_action :generate_new_token
-    before_action :user_authorization
+    before_action :authorization
     
     # respond_to :json
 
