@@ -43,11 +43,15 @@ class ApplicationController < ActionController::API
     # params[:user_id] байгаа газар ашиглана
     def authorization
         decoded_token = decode_token
-        if params[:user_id] == decoded_token[0]['sub'] || params[:id] == decoded_token[0]['sub']
-
-        else
+        if params[:user_id] != decoded_token[0]['sub'] 
             raise "Хандах эрхгүй хэрэглэгч"
         end
     end
 
+    def user_authorization
+        decoded_token = decode_token
+        if params[:id] != decoded_token[0]['sub'] 
+            raise "Хандах эрхгүй хэрэглэгч"
+        end
+    end
 end

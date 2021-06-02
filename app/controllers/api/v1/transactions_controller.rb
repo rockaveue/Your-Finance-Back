@@ -9,7 +9,9 @@ class Api::V1::TransactionsController < ApplicationController
     def index
         # Pagy::VARS[:items]  = 2
         user = User.find_by_id(params[:user_id])
+        return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
         transactions = Transaction.select('*').joins(:category).where(:user_id => user.id)
+        return render json: { 'message' => 'Хэрэглэгчийн гүйлгээ олдсонгүй'}, status: 404 unless transactions
 
         render json: transactions
     end
@@ -18,7 +20,10 @@ class Api::V1::TransactionsController < ApplicationController
     # Хэрэглэгчийн гүйлгээ сонгох
     def show
         user = User.find(params[:user_id])
+        return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
         transaction = Transaction.find(params[:id])
+        return render json: { 'message' => 'Хэрэглэгчийн гүйлгээ олдсонгүй'}, status: 404 unless transaction
+
         if user.id == transaction.user_id
             render json: transaction
         else
@@ -30,6 +35,7 @@ class Api::V1::TransactionsController < ApplicationController
     # Гүйлгээ нэмэх
     def create
         user = User.find(params[:user_id])
+        return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
         transaction = Transaction.new(transaction_params)
         transaction.user_id = params[:user_id]
         # render json: transaction    
@@ -48,10 +54,10 @@ class Api::V1::TransactionsController < ApplicationController
                     render json: user.errors.full_messages
                 end
             else
-                render json: transaction.errors, status: :unprocessable_entity
+                render json: transaction.errors.full_messages, status: :unprocessable_entity
             end
         rescue ActiveRecord::RecordInvalid
-            render json: {"status": "error"}, status: :unprocessable_entity
+            render json: {"message": transaction.errors.full_messages}, status: :unprocessable_entity
         end
     end
     
@@ -96,9 +102,9 @@ class Api::V1::TransactionsController < ApplicationController
         end
     end
 
-    # DELETE /users/:user_id/transaction/:id
+    # POST /users/:user_id/transaction/:id/soft_delete
     # Хэрэглэгчийн гүйлгээ устгах
-    def destroy
+    def soft_delete
         user = User.find(params[:user_id])
         transaction = Transaction.find(params[:id])
         user = User.find(params[:user_id])
@@ -109,7 +115,7 @@ class Api::V1::TransactionsController < ApplicationController
             else
                 user.update(balance: user.balance + transaction.amount)
             end
-            transaction.destroy
+            transaction.update(is_deleted: true)
             render json: transaction
         rescue ActiveRecord::RecordInvalid
             render json: {"status": "error"}, status: :unprocessable_entity
@@ -243,6 +249,6 @@ class Api::V1::TransactionsController < ApplicationController
 
     private
     def transaction_params
-        params.require(:transaction).permit(:category_id, :transaction_type, :transaction_date, :amount, :is_repeat, :note)
+        params.require(:transaction).permit(:category_id, :is_income, :transaction_date, :amount, :is_repeat, :note)
     end
 end

@@ -11,34 +11,31 @@ Rails.application.routes.draw do
                   },
                   controllers: {
                     sessions: 'api/v1/users/sessions',
-                    registrations: 'api/v1/users/registrations'
+                    registrations: 'api/v1/users/registrations',
                   }
       # resources :sessions, only: [:create, :destroy]
       # resources :registrations, only: [:create, :destroy]
       resources :users, except: :index do
         resources :transactions do
-          # users/{id}/transactions/{id}/{category_id}
-          get "category", to: "categories#transactionCategory"
-          
+          collection do
+            post :getDataByDate
+            post :getDataByBetweenDate
+          end
+          member do
+            post :soft_delete
+          end
         end
-        resource :transactions do
-          post "date_transactions", to: "transactions#date_transactions"
+        resources :categories do
+          collection do
+            post :getAmountByType
+            post :getCategory
+          end
         end
-        
-        resources :user_categories do
-          # users/{id}/user_categories/{id}/{category_id}
-          # get "/category", to: "category#show"
+        member do
+          post :soft_delete
         end
-        # get "user_categories", to: "user_categories#index"
-        resources :categories
-        post "categories_by_type", to: "categories#getCategoryByType"
-        post "get_type_amount_by_date", to: "categories#getAmountByType"
-        post "get_data_by_date", to: "transactions#getDataByDate"
-        post "get_data_by_between_date", to: "transactions#getDataByBetweenDate"
-        # get "/transactions", to: "transactions#index"
       end
-      # Default Category авах route
-      get "default_category", to: "categories#defaultAllCategory"
+      get 'defaultCategory', to: 'categories#defaultAllCategory'
     end
   end
 end
