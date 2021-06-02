@@ -1,4 +1,5 @@
 class Api::V1::CategoriesController < ApplicationController
+    before_action :add_to_blacklist
     
     # GET users/:user_id/transactions/:transactions_id/categories
     # Гүйлгээний категор авах

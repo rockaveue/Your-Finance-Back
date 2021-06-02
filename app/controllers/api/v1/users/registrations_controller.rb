@@ -23,11 +23,11 @@ class Api::V1::Users::RegistrationsController < Devise::RegistrationsController
 
 
     def register_success
-      render json: { message: 'Signed up successfully.' }
+      render json: { message: 'Амжилттай бүртгүүллээ.' }
     end
   
     def register_failed
-      render json: { message: "Something went wrong." }
+      render json: { message: "Бүртгүүлэхэд асуудал гарлаа." }
     end
 
     def sign_up_params

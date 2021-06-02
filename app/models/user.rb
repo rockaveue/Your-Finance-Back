@@ -11,11 +11,4 @@ class User < ApplicationRecord
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable, :recoverable, :rememberable, :validatable, :jwt_authenticatable, jwt_revocation_strategy: JwtBlacklist
 
-    # jwt_revocation_strategy: JwtDenylist
-    
-    # JWT үүсгэх функц
-    # def generate_jwt
-    #     JWT.encode({id: id, exp: 10.days.from_now.to_i}, Rails.application.secrets.secret_key_base)
-    # end
-    
 end

@@ -16,22 +16,20 @@ class Api::V1::Users::SessionsController < Devise::SessionsController
     private
   
     def respond_with(resource, _opts = {})
-      render json: { message: 'You are logged in.', resource: resource }, status: :ok
+      render json: { message: 'Та нэвтэрлээ.', resource: resource }, status: :ok
     end
   
     def respond_to_on_destroy
-      # head :ok
-      # render nothing: true, status: :ok
       log_out_success && return if current_api_v1_user
   
       log_out_failure
     end
   
     def log_out_success
-      render json: { message: "You are logged out." }, status: :ok
+      render json: { message: "Амжилттай гарлаа." }, status: :ok
     end
   
     def log_out_failure
-      render json: { message: "Log out failure."}, status: :unauthorized
+      render json: { message: "Гарахад алдаа гарлаа."}, status: :unauthorized
     end
   end
