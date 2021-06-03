@@ -9,9 +9,10 @@ class Api::V1::TransactionsController < ApplicationController
     # Pagy::VARS[:items]  = 2
     user = User.find_by_id(params[:user_id])
     return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
-    transactions = Transaction.select('*').joins(:category).where(:user_id => user.id)
+    transactions = Transaction
+      .getTransactions(params, [true, false], false, nil)
+      .select('*')
     return render json: { 'message' => 'Хэрэглэгчийн гүйлгээ олдсонгүй'}, status: 404 unless transactions
-
     render json: transactions
   end
 
@@ -41,7 +42,7 @@ class Api::V1::TransactionsController < ApplicationController
     user_balance = user.balance
     ActiveRecord::Base.transaction do
       if transaction.save
-        if params[:transaction_type] == true
+        if params[:is_income] == true
           user_balance += params[:amount]
         else
           user_balance -= params[:amount]
@@ -70,23 +71,23 @@ class Api::V1::TransactionsController < ApplicationController
 
     ActiveRecord::Base.transaction do
       last_amount = transaction.amount
-      last_type = transaction.transaction_type
+      last_type = transaction.is_income
       if transaction.update(transaction_params)
         user = User.find(params[:user_id])
         # хэрэглэгчийн баланс
         user_balance = user.balance
         # хуучин төрөл болон дүн
         # хуучин төрөл шинэ төрөлтэй ижил байвал
-        if last_type == params[:transaction_type]
+        if last_type == params[:is_income]
           # төрөл нь орлого бол
-          if params[:transaction_type] == true
+          if params[:is_income] == true
             # одоогийн дүнгээс хуучин дүнг хасаж баланс дээр нэмнэ
             user.update(balance: user_balance + (params[:amount] - last_amount))
           else
             user.update(balance: user_balance - (params[:amount] - last_amount))
           end
         else
-          if params[:transaction_type] == true
+          if params[:is_income] == true
             user.update(balance: user_balance + (params[:amount] + last_amount))
           else
             user.update(balance: user_balance - (params[:amount] + last_amount))
@@ -109,7 +110,7 @@ class Api::V1::TransactionsController < ApplicationController
     return render json: { 'message' => 'Хэрэглэгчийн гүйлгээ олдсонгүй'}, status: 404 unless transaction
     
     ActiveRecord::Base.transaction do
-      if transaction.transaction_type == true
+      if transaction.is_income == true
         user.update(balance: user.balance - transaction.amount)
       else
         user.update(balance: user.balance + transaction.amount)
@@ -123,124 +124,59 @@ class Api::V1::TransactionsController < ApplicationController
     end
   end
 
-  # POST /users/:user_id/get_data_by_date
+  # POST /users/:user_id/transactions/getTransactionsByDay
   # Өдрөөр анализ мэдээлэл авах
-  def getDataByDate
-    # Орлого авч байгаа хэсэг
-    income = Transaction.select('transaction_date, sum(amount) as amount')
-      .where(:user_id => params[:user_id])
-      .where(:transaction_type => 1)
-      .where('DATE(transaction_date) BETWEEN ? AND ?', params[:number_of_days].days.ago, Time.now)
-      .group(:transaction_date).as_json(:except => :id)
-
-    total_income = Transaction.select('sum(amount) as total_amount')
-      .where(:user_id => params[:user_id])
-      .where(:transaction_type => 1)
-      .where('DATE(transaction_date) BETWEEN ? AND ?', params[:number_of_days].days.ago, Time.now).as_json(:except => :id)
-    
-    # Зарлага авч байгаа хэсэг
+  def getTransactionsByDay
+    income = Transaction
+      .getTransactions(params, true, true, 1)
+    total_income = Transaction
+      .getTransactions(params, true, false, 2)
     expense = Transaction
-      .select('transaction_date, sum(amount) as amount')
-      .where(:user_id => params[:user_id])
-      .where(:transaction_type => 0)
-      .where('DATE(transaction_date) BETWEEN ? AND ?', params[:number_of_days].days.ago, Time.now)
-      .group(:transaction_date).as_json(:except => :id)
-    
+      .getTransactions(params, false, true, 1)
     total_expense = Transaction
-      .select('sum(amount) as total_amount')
-      .where(:user_id => params[:user_id])
-      .where(:transaction_type => 0)
-      .where('DATE(transaction_date) BETWEEN ? AND ?', params[:number_of_days].days.ago, Time.now).as_json(:except => :id)
-    
-    user = User.find(params[:user_id])
-        
-    transactions = Transaction.select('*')
-      .where(:user_id => params[:user_id])
-      .where('DATE(transaction_date) BETWEEN ? AND ?', params[:number_of_days].days.ago, Time.now)
+      .getTransactions(params, false, false, 2)
+    transactions = Transaction
+      .getTransactions(params, [true, false], false, nil)
+      .select('*')
       .order(transaction_date: :desc)
-
-    balance = user.balance
-    balanceArray = Array.new
-    transactions.each do |transaction|
-      if transaction.transaction_type == true
-        balance -= transaction.amount
-      else
-        balance += transaction.amount
-      end
-      balanceArray.append({"balance" => balance, "date" => transaction.transaction_date})
-    end
-
-    # render json: transactions
-    # balance
-    render json: {"income" => [income, total_income], "expense" => [expense, total_expense], "balance" => balanceArray}
-  end
-
-  # POST /users/:user_id/get_data_by_between_date
-  # Хоёр он сарын хоорондох гүйлгээн мэдээлэл
-  def getDataByBetweenDate
-    # Орлого авч байгаа хэсэг
-    income = Transaction.select('transaction_date, sum(amount) as amount')
-      .where(:user_id => params[:user_id])
-      .where(:transaction_type => 1)
-      .where('DATE(transaction_date) BETWEEN ? AND ?', params[:date_from], params[:date_to])
-      .group(:transaction_date).as_json(:except => :id)
-
-    total_income = Transaction.select('sum(amount) as total_amount')
-      .where(:user_id => params[:user_id])
-      .where(:transaction_type => 1)
-      .where('DATE(transaction_date) BETWEEN ? AND ?', params[:date_from], params[:date_to]).as_json(:except => :id)
-    
-    # Зарлага авч байгаа хэсэг
-    expense = Transaction
-      .select('transaction_date, sum(amount) as amount')
-      .where(:user_id => params[:user_id])
-      .where(:transaction_type => 0)
-      .where('DATE(transaction_date) BETWEEN ? AND ?', params[:date_from], params[:date_to])
-      .group(:transaction_date).as_json(:except => :id)
-    
-    total_expense = Transaction
-      .select('sum(amount) as total_amount')
-      .where(:user_id => params[:user_id])
-      .where(:transaction_type => 0)
-      .where('DATE(transaction_date) BETWEEN ? AND ?', params[:date_from], params[:date_to]).as_json(:except => :id)
-    
-    user = User.find(params[:user_id])
-    return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
-
-    transactions = Transaction.select('*')
-      .where(:user_id => params[:user_id])
-      .where('DATE(transaction_date) BETWEEN ? AND ?', params[:date_from], params[:date_to])
-      .order(transaction_date: :desc)
-
-    balance = user.balance
-    balanceArray = Array.new
-    transactions.each do |transaction|
-      if transaction.transaction_type == true
-          balance -= transaction.amount
-      else
-          balance += transaction.amount
-      end
-      balanceArray.append({"balance" => balance, "date" => transaction.transaction_date})
-    end
-
-    # render json: transactions
-    # balance
-
-    render json: {"income" => [income, total_income], "expense" => [expense, total_expense], "balance" => balanceArray}
-  end
-
-  def date_transactions
-      
-    income = Transaction.select('*').where(:transaction_date => params[:transaction_date])
-      .where(:transaction_type => 1)
-
-    expense = Transaction.select('*').where(:transaction_date => params[:transaction_date])
-      .where(:transaction_type => 0)
-    transactions = {
-      "income" => income,
-      "expense" => expense,
+    render json: {
+      "income" => [income, total_income],
+      "expense" => [expense, total_expense]
     }
-    render json:transactions
+  end
+
+  # POST /users/:user_id/transactions/getTransactionsByBetweenDate
+  # Хоёр он сарын хоорондох гүйлгээн мэдээлэл
+  def getTransactionsByBetweenDate
+    income = Transaction
+      .getTransactions(params, true, true, 1)
+    total_income = Transaction
+      .getTransactions(params, true, false, 2)
+    expense = Transaction
+      .getTransactions(params, false, true, 1)
+    total_expense = Transaction
+      .getTransactions(params, false, false, 2)
+    transactions = Transaction
+      .getTransactionCategory(params)
+      .getTransactions(params, [true, false], false, 3)
+    render json: {
+      "income" => [income, total_income],
+      "expense" => [expense, total_expense],
+      "transactions" => transactions
+    }
+  end
+
+  # POST /users/:user_id/transactions/getTransactionsByDate
+  # Оруулсан он сар дахь гүйлгээний мэдээлэл
+  def getTransactionsByDate
+    income = Transaction
+      .getTransactions(params, true, false, nil)
+    expense = Transaction
+      .getTransactions(params, false, false, nil)
+    render json: {
+      "income" => income,
+      "expense" => expense
+    }
   end
 
   private

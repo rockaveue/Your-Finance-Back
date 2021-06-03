@@ -23,7 +23,11 @@ class Api::V1::CategoriesController < ApplicationController
   # Хэрэглэгчийн категор авах, төрөл тусгавал төрлөөр авах
   def getCategory
     categories = Category.getUserCategories(params)
-    render json: categories
+    
+    income = Category.where(is_default: true, is_income: true, is_deleted: false)
+    expense = Category.where(is_default: true, is_income: false, is_deleted: false)
+    
+    render json: {user: categories, default: [income, expense]}
   end
 
   # POST users/:user_id/categories

@@ -18,8 +18,9 @@ Rails.application.routes.draw do
       resources :users, except: :index do
         resources :transactions do
           collection do
-            post :getDataByDate
-            post :getDataByBetweenDate
+            post :getTransactionsByDay
+            post :getTransactionsByBetweenDate
+            post :getTransactionsByDate
           end
           member do
             post :soft_delete
