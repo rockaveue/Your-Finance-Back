@@ -9,7 +9,7 @@ class Api::V1::TransactionsController < ApplicationController
     # Pagy::VARS[:items]  = 2
     user = User.find_by_id(params[:user_id])
     return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
-    transactions = Transaction.select('*').joins(:category).where(:user_id => user.id)
+    transactions = Transaction.getTransactionCategory(params)
     return render json: { 'message' => 'Хэрэглэгчийн гүйлгээ олдсонгүй'}, status: 404 unless transactions
 
     render json: transactions
@@ -41,7 +41,7 @@ class Api::V1::TransactionsController < ApplicationController
     user_balance = user.balance
     ActiveRecord::Base.transaction do
       if transaction.save
-        if params[:transaction_type] == true
+        if params[:is_income] == true
           user_balance += params[:amount]
         else
           user_balance -= params[:amount]
@@ -70,23 +70,23 @@ class Api::V1::TransactionsController < ApplicationController
 
     ActiveRecord::Base.transaction do
       last_amount = transaction.amount
-      last_type = transaction.transaction_type
+      last_type = transaction.is_income
       if transaction.update(transaction_params)
         user = User.find(params[:user_id])
         # хэрэглэгчийн баланс
         user_balance = user.balance
         # хуучин төрөл болон дүн
         # хуучин төрөл шинэ төрөлтэй ижил байвал
-        if last_type == params[:transaction_type]
+        if last_type == params[:is_income]
           # төрөл нь орлого бол
-          if params[:transaction_type] == true
+          if params[:is_income] == true
             # одоогийн дүнгээс хуучин дүнг хасаж баланс дээр нэмнэ
             user.update(balance: user_balance + (params[:amount] - last_amount))
           else
             user.update(balance: user_balance - (params[:amount] - last_amount))
           end
         else
-          if params[:transaction_type] == true
+          if params[:is_income] == true
             user.update(balance: user_balance + (params[:amount] + last_amount))
           else
             user.update(balance: user_balance - (params[:amount] + last_amount))
@@ -109,7 +109,7 @@ class Api::V1::TransactionsController < ApplicationController
     return render json: { 'message' => 'Хэрэглэгчийн гүйлгээ олдсонгүй'}, status: 404 unless transaction
     
     ActiveRecord::Base.transaction do
-      if transaction.transaction_type == true
+      if transaction.is_income == true
         user.update(balance: user.balance - transaction.amount)
       else
         user.update(balance: user.balance + transaction.amount)
@@ -127,30 +127,24 @@ class Api::V1::TransactionsController < ApplicationController
   # Өдрөөр анализ мэдээлэл авах
   def getDataByDate
     # Орлого авч байгаа хэсэг
-    income = Transaction.select('transaction_date, sum(amount) as amount')
-      .where(:user_id => params[:user_id])
-      .where(:transaction_type => 1)
-      .where('DATE(transaction_date) BETWEEN ? AND ?', params[:number_of_days].days.ago, Time.now)
-      .group(:transaction_date).as_json(:except => :id)
+    income = Transaction
+      .getTransactionsByDay(params, true, true)
+      .select('transaction_date, sum(amount) as amount')
 
-    total_income = Transaction.select('sum(amount) as total_amount')
-      .where(:user_id => params[:user_id])
-      .where(:transaction_type => 1)
-      .where('DATE(transaction_date) BETWEEN ? AND ?', params[:number_of_days].days.ago, Time.now).as_json(:except => :id)
+    total_income = Transaction
+      .getTransactionsByDay(params, true, false)
+      .select('sum(amount) as total_amount')
+      .as_json(:except => :id)
     
     # Зарлага авч байгаа хэсэг
     expense = Transaction
+      .getTransactionsByDay(params, false, true)
       .select('transaction_date, sum(amount) as amount')
-      .where(:user_id => params[:user_id])
-      .where(:transaction_type => 0)
-      .where('DATE(transaction_date) BETWEEN ? AND ?', params[:number_of_days].days.ago, Time.now)
-      .group(:transaction_date).as_json(:except => :id)
     
     total_expense = Transaction
+      .getTransactionsByDay(params, false, false)
       .select('sum(amount) as total_amount')
-      .where(:user_id => params[:user_id])
-      .where(:transaction_type => 0)
-      .where('DATE(transaction_date) BETWEEN ? AND ?', params[:number_of_days].days.ago, Time.now).as_json(:except => :id)
+      .as_json(:except => :id)
     
     user = User.find(params[:user_id])
         

@@ -19,4 +19,17 @@ class Transaction < ApplicationRecord
 
     return query
   end
+
+  def self.getTransactionsByDay(params, is_income, groupByDate)
+    query = where(:user_id => params[:user_id])
+      .where('DATE(transaction_date) BETWEEN ? AND ?', params[:number_of_days].days.ago, Time.now)
+      .where('is_income = ?', is_income)
+
+    if groupByDate
+      query = query.group(:transaction_date)
+        .as_json(:except => :id)
+    end
+    
+    return query
+  end
 end
