@@ -21,7 +21,7 @@ class Api::V1::UsersController < ApplicationController
     if user.update(user_params)
         render json: user
     else
-        render json: {message: 'Алдаа гарлаа', data: user.errors}, status: 422
+        render json: {message: user.errors}, status: 422
     end
   end
 
@@ -33,7 +33,7 @@ class Api::V1::UsersController < ApplicationController
     if user.update(is_deleted: true)
         render json: {message: 'Устгагдсан', data: user}
     else
-        render json: {message: 'Алдаа гарлаа', data: user.errors}, status: 422
+        render json: {message: user.errors}, status: 422
     end
   end
 

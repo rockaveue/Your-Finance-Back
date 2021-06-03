@@ -5,7 +5,9 @@ class Api::V1::CategoriesController < ApplicationController
   # Гүйлгээний категор авах
   def transactionCategory
     transaction = Transaction.find(params[:transaction_id])
+    return render json: { 'message' => 'transaction not found'}, status: 404 unless transactions
     category = Category.find(transaction.category_id)
+    return render json: { 'message' => 'category not found'}, status: 404 unless category
     render json: category
   end
 
