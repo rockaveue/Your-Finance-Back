@@ -1,8 +1,8 @@
 include Pagy::Backend
 class ApplicationController < ActionController::API
   respond_to :json
-  before_action :authenticate_api_v1_user!
-  before_action :generate_new_token
+  # before_action :authenticate_api_v1_user!
+  # before_action :generate_new_token
 
   def jwt_subject
     self

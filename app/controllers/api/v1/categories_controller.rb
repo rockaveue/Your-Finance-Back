@@ -1,6 +1,6 @@
 class Api::V1::CategoriesController < ApplicationController
 
-  before_action :authorization, except: :defaultAllCategory
+  # before_action :authorization, except: :defaultAllCategory
   # GET users/:user_id/transactions/:transactions_id/categories
   # Гүйлгээний категор авах
   def transactionCategory
@@ -14,8 +14,8 @@ class Api::V1::CategoriesController < ApplicationController
   def defaultAllCategory
     # categories = Category.where(is_default: true)
     # render json: categories
-    income = Category.where(is_default: true, is_income: true)
-    expense = Category.where(is_default: true, is_income: false)
+    income = Category.where(is_default: true, is_income: true, is_deleted: false)
+    expense = Category.where(is_default: true, is_income: false, is_deleted: false)
     render json: {"income" => income, "expense" => expense}
   end
 
@@ -37,7 +37,7 @@ class Api::V1::CategoriesController < ApplicationController
           :user_id => params[:user_id]
         )
         if userCategory.save
-          render json: {status: 'category created', data: category.to_json}    
+          render json: category  
         else            
           render json: {errors: userCategory.errors}, status: :unprocessable_entity
         end
