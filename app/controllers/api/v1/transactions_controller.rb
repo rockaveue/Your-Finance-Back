@@ -10,7 +10,7 @@ class Api::V1::TransactionsController < ApplicationController
     user = User.find_by_id(params[:user_id])
     return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
     transactions = Transaction
-      .getTransactions(params, 0, [true, false], false)
+      .getTransactions(params, [true, false], false)
       .select('*')
     return render json: { 'message' => 'Хэрэглэгчийн гүйлгээ олдсонгүй'}, status: 404 unless transactions
     render json: transactions
