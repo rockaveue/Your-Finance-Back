@@ -22,7 +22,7 @@ class Transaction < ApplicationRecord
     return query
   end
 
-  def self.getTransactions(params, is_income, groupByDate)
+  def self.getTransactions(params, is_income, groupByDate, selected)
     query = where(:user_id => params[:user_id])
       .where(is_income: is_income)
       .where(is_deleted: false)
@@ -34,9 +34,19 @@ class Transaction < ApplicationRecord
     elsif params[:transaction_date].present?
       query = query.where(:transaction_date => params[:transaction_date])
     end
-
     if groupByDate
       query = query.group(:transaction_date)
+    end
+    if selected == 1
+      query = query.select('transaction_date, sum(amount) as amount')
+    elsif selected == 2
+      query = query.select('sum(amount) as total_amount')
+    elsif selected == 3
+      query = query.select('transactions.is_income, amount, is_repeat, note, category_name')
+    end
+
+    if !selected.nil?
+      query.as_json(:except => :id)
     end
     
     return query

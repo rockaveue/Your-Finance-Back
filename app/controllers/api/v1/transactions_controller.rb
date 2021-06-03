@@ -10,7 +10,7 @@ class Api::V1::TransactionsController < ApplicationController
     user = User.find_by_id(params[:user_id])
     return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
     transactions = Transaction
-      .getTransactions(params, [true, false], false)
+      .getTransactions(params, [true, false], false, nil)
       .select('*')
     return render json: { 'message' => 'Хэрэглэгчийн гүйлгээ олдсонгүй'}, status: 404 unless transactions
     render json: transactions
@@ -128,23 +128,15 @@ class Api::V1::TransactionsController < ApplicationController
   # Өдрөөр анализ мэдээлэл авах
   def getTransactionsByDay
     income = Transaction
-      .getTransactions(params, true, true)
-      .select('transaction_date, sum(amount) as amount')
-      .as_json(:except => :id)
+      .getTransactions(params, true, true, 1)
     total_income = Transaction
-      .getTransactions(params, true, false)
-      .select('sum(amount) as total_amount')
-      .as_json(:except => :id)
+      .getTransactions(params, true, false, 2)
     expense = Transaction
-      .getTransactions(params, false, true)
-      .select('transaction_date, sum(amount) as amount')
-      .as_json(:except => :id)
+      .getTransactions(params, false, true, 1)
     total_expense = Transaction
-      .getTransactions(params, false, false)
-      .select('sum(amount) as total_amount')
-      .as_json(:except => :id)
+      .getTransactions(params, false, false, 2)
     transactions = Transaction
-      .getTransactions(params, [true, false], false)
+      .getTransactions(params, [true, false], false, nil)
       .select('*')
       .order(transaction_date: :desc)
     render json: {
@@ -157,27 +149,20 @@ class Api::V1::TransactionsController < ApplicationController
   # Хоёр он сарын хоорондох гүйлгээн мэдээлэл
   def getTransactionsByBetweenDate
     income = Transaction
-      .getTransactions(params, true, true)
-      .select('transaction_date, sum(amount) as amount')
-      .as_json(:except => :id)
+      .getTransactions(params, true, true, 1)
     total_income = Transaction
-      .getTransactions(params, true, false)
-      .select('sum(amount) as total_amount')
-      .as_json(:except => :id)
+      .getTransactions(params, true, false, 2)
     expense = Transaction
-      .getTransactions(params, false, true)
-      .select('transaction_date, sum(amount) as amount')
-      .as_json(:except => :id)
+      .getTransactions(params, false, true, 1)
     total_expense = Transaction
-      .getTransactions(params, false, false)
-      .select('sum(amount) as total_amount')
-      .as_json(:except => :id)
+      .getTransactions(params, false, false, 2)
     transactions = Transaction
-      .getTransactions(params, [true, false], false)
-      .order(transaction_date: :desc)
+      .getTransactionCategory(params)
+      .getTransactions(params, [true, false], false, 3)
     render json: {
       "income" => [income, total_income],
-      "expense" => [expense, total_expense]
+      "expense" => [expense, total_expense],
+      "transactions" => transactions
     }
   end
 
@@ -185,9 +170,9 @@ class Api::V1::TransactionsController < ApplicationController
   # Оруулсан он сар дахь гүйлгээний мэдээлэл
   def getTransactionsByDate
     income = Transaction
-      .getTransactions(params, true, false)
+      .getTransactions(params, true, false, nil)
     expense = Transaction
-      .getTransactions(params, false, false)
+      .getTransactions(params, false, false, nil)
     render json: {
       "income" => income,
       "expense" => expense
