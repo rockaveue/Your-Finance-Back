@@ -23,7 +23,6 @@ class Api::V1::TransactionsController < ApplicationController
     return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
     transaction = Transaction.find(params[:id])
     return render json: { 'message' => 'Хэрэглэгчийн гүйлгээ олдсонгүй'}, status: 404 unless transaction
-
     if user.id == transaction.user_id
       render json: transaction
     else
@@ -38,7 +37,6 @@ class Api::V1::TransactionsController < ApplicationController
     return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
     transaction = Transaction.new(transaction_params)
     transaction.user_id = params[:user_id]
-    # render json: transaction    
     user_balance = user.balance
     ActiveRecord::Base.transaction do
       if transaction.save
@@ -68,7 +66,6 @@ class Api::V1::TransactionsController < ApplicationController
     return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
     transaction = Transaction.find(params[:id])
     return render json: { 'message' => 'Хэрэглэгчийн гүйлгээ олдсонгүй'}, status: 404 unless transaction
-
     ActiveRecord::Base.transaction do
       last_amount = transaction.amount
       last_type = transaction.is_income
@@ -78,22 +75,23 @@ class Api::V1::TransactionsController < ApplicationController
         user_balance = user.balance
         # хуучин төрөл болон дүн
         # хуучин төрөл шинэ төрөлтэй ижил байвал
-        if last_type == params[:is_income]
-          # төрөл нь орлого бол
-          if params[:is_income] == true
-            # одоогийн дүнгээс хуучин дүнг хасаж баланс дээр нэмнэ
-            user.update(balance: user_balance + (params[:amount] - last_amount))
+        if params[:is_income].present?
+          if last_type == params[:is_income]
+            # төрөл нь орлого бол
+            if params[:is_income] == true
+              # одоогийн дүнгээс хуучин дүнг хасаж баланс дээр нэмнэ
+              user.update(balance: user_balance + (params[:amount] - last_amount))
+            else
+              user.update(balance: user_balance - (params[:amount] - last_amount))
+            end
           else
-            user.update(balance: user_balance - (params[:amount] - last_amount))
-          end
-        else
-          if params[:is_income] == true
-            user.update(balance: user_balance + (params[:amount] + last_amount))
-          else
-            user.update(balance: user_balance - (params[:amount] + last_amount))
+            if params[:is_income] == true
+              user.update(balance: user_balance + (params[:amount] + last_amount))
+            else
+              user.update(balance: user_balance - (params[:amount] + last_amount))
+            end
           end
         end
-        
         render json: transaction.to_json
       else
         render json: transaction.errors.full_messages, status: :unprocessable_entity
@@ -101,14 +99,13 @@ class Api::V1::TransactionsController < ApplicationController
     end
   end
 
-  # POST /users/:user_id/transaction/:id/soft_delete
+  # DELETE /users/:user_id/transaction/:id
   # Хэрэглэгчийн гүйлгээ устгах
-  def soft_delete
+  def destroy
     user = User.find(params[:user_id])
     return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
     transaction = Transaction.find(params[:id])
     return render json: { 'message' => 'Хэрэглэгчийн гүйлгээ олдсонгүй'}, status: 404 unless transaction
-    
     ActiveRecord::Base.transaction do
       if transaction.is_income == true
         user.update(balance: user.balance - transaction.amount)

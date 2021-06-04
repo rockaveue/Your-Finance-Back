@@ -22,18 +22,12 @@ Rails.application.routes.draw do
             post :getTransactionsByBetweenDate
             post :getTransactionsByDate
           end
-          member do
-            post :soft_delete
-          end
         end
-        resources :categories do
+        resources :categories, except: :index do
           collection do
             post :getCategoryAmountByDate
             post :getCategory
           end
-        end
-        member do
-          post :soft_delete
         end
       end
       get 'defaultCategory', to: 'categories#defaultAllCategory'
