@@ -66,6 +66,7 @@ class Api::V1::CategoriesController < ApplicationController
   # Категор устгах
   def destroy
     category = Category.find(params[:id])
+    return render json: { 'message' => 'Категор олдсонгүй'}, status: 404 unless category
     if category.update(is_deleted: true)
       render json: {message: "Устгагдлаа", category: category}
     else

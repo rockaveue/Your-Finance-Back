@@ -34,9 +34,11 @@ class Transaction < ApplicationRecord
     elsif params[:transaction_date].present?
       query = query.where(:transaction_date => params[:transaction_date])
     end
+
     if groupByDate
       query = query.group(:transaction_date)
     end
+
     if selected == 1
       query = query.select('transaction_date, sum(amount) as amount')
     elsif selected == 2
@@ -46,7 +48,7 @@ class Transaction < ApplicationRecord
     end
 
     if !selected.nil?
-      query.as_json(:except => :id)
+      query = query.as_json(:except => :id)
     end
     
     return query
