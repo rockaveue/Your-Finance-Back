@@ -27,6 +27,7 @@ Rails.application.routes.draw do
           collection do
             post :getCategoryAmountByDate
             post :getCategory
+            get :defaultCategory
           end
         end
       end

@@ -11,7 +11,7 @@ class Api::V1::CategoriesController < ApplicationController
 
   # GET /default_category
   # Default Category авах
-  def defaultAllCategory
+  def defaultCategory
     # categories = Category.where(is_default: true)
     # render json: categories
     income = Category.where(is_default: true, is_income: true, is_deleted: false)
