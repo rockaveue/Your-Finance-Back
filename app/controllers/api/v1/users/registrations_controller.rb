@@ -1,6 +1,6 @@
 class Api::V1::Users::RegistrationsController < Devise::RegistrationsController
   respond_to :json
-
+  skip_before_action :generate_new_token
   # параметрүүдийг бүгдийг авах бүртгүүлэх функц
   def create
     resource = build_resource(sign_up_params)
