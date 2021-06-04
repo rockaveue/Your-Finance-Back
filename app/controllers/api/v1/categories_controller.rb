@@ -5,9 +5,7 @@ class Api::V1::CategoriesController < ApplicationController
   # Гүйлгээний категор авах
   def transactionCategory
     transaction = Transaction.find(params[:transaction_id])
-    return render json: { 'message' => 'transaction not found'}, status: 404 unless transactions
     category = Category.find(transaction.category_id)
-    return render json: { 'message' => 'category not found'}, status: 404 unless category
     render json: category
   end
 
@@ -41,10 +39,10 @@ class Api::V1::CategoriesController < ApplicationController
         if userCategory.save
           render json: {status: 'category created', data: category.to_json}    
         else            
-          render json: {errors: userCategory.errors}, status: :unprocessable_entity
+          render json: {message: userCategory.errors}, status: 422
         end
       else
-        render json: {errors: category.errors}, status: :unprocessable_entity
+        render json: {message: category.errors}, status: 422
       end 
     end
   end
@@ -56,7 +54,7 @@ class Api::V1::CategoriesController < ApplicationController
     if category.update(category_params)
       render json: category
     else
-      render json: category.errors, status: :unprocessable_entity
+      render json: {message: category.errors}, status: 422
     end
   end
 
@@ -65,9 +63,9 @@ class Api::V1::CategoriesController < ApplicationController
   def destroy
     category = Category.find(params[:id])
     if category.update(is_deleted: true)
-      render json: {message: "Устгагдлаа", category: category}
+      render json: {message: "Category is deleted", category: category}
     else
-      render json: {errors: category.errors}, status: :unprocessable_entity
+      render json: {message: category.errors}, status: 422
     end
   end
 

@@ -6,7 +6,6 @@ class Api::V1::UsersController < ApplicationController
   # Хэрэглэгчийн сонгох
   def show
     user = User.find(params[:id])
-    return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
     # cache middleware
     if stale?(last_modified: user.updated_at)
         render json: user
@@ -17,7 +16,6 @@ class Api::V1::UsersController < ApplicationController
   # Хэрэглэгч өөрчлөх
   def update
     user = User.find(params[:id])
-    return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
     if user.update(user_params)
         render json: user
     else
@@ -29,9 +27,8 @@ class Api::V1::UsersController < ApplicationController
   # Хэрэглэгч устгах
   def soft_delete
     user = User.find(params[:id])
-    return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
     if user.update(is_deleted: true)
-        render json: {message: 'Устгагдсан', data: user}
+        render json: {message: 'User is deleted', data: user}
     else
         render json: {message: user.errors}, status: 422
     end

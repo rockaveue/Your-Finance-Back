@@ -8,11 +8,10 @@ class Api::V1::TransactionsController < ApplicationController
   def index
     # Pagy::VARS[:items]  = 2
     user = User.find_by_id(params[:user_id])
-    return render json: { 'message' => 'User not found'}, status: 404 unless user
     transactions = Transaction
       .getTransactions(params, [true, false], false)
       .select('*')
-    return render json: { 'message' => 'transaction not found'}, status: 404 unless transactions
+
     render json: transactions
   end
 
@@ -20,14 +19,11 @@ class Api::V1::TransactionsController < ApplicationController
   # Хэрэглэгчийн гүйлгээ сонгох
   def show
     user = User.find(params[:user_id])
-    return render json: { 'message' => 'User not found'}, status: 404 unless user
     transaction = Transaction.find(params[:id])
-    return render json: { 'message' => 'transaction not found'}, status: 404 unless transaction
-
     if user.id == transaction.user_id
       render json: transaction
     else
-      render json: {message: transaction.errors} status: :unauthorized
+      render json: {message: transaction.errors}, status: 422
     end
   end
 
@@ -35,7 +31,6 @@ class Api::V1::TransactionsController < ApplicationController
   # Гүйлгээ нэмэх
   def create
     user = User.find(params[:user_id])
-    return render json: { 'message' => 'User not found'}, status: 404 unless user
     transaction = Transaction.new(transaction_params)
     transaction.user_id = params[:user_id]
     # render json: transaction    
@@ -51,13 +46,11 @@ class Api::V1::TransactionsController < ApplicationController
         if user.save
           render json: transaction.to_json
         else
-          render json: user.errors.full_messages
+          render json: {message: transaction.errors}, status: 422
         end
       else
-        render json: {message: transaction.errors}, status: :unprocessable_entity
+        render json: {message: transaction.errors}, status: 422
       end
-    rescue ActiveRecord::RecordInvalid
-      render json: {"message": transaction.errors.full_messages}, status: :unprocessable_entity
     end
   end
 
@@ -65,9 +58,7 @@ class Api::V1::TransactionsController < ApplicationController
   # Хэрэглэгчийн гүйлгээ өөрчлөх
   def update
     user = User.find(params[:user_id])
-    return render json: { 'message' => 'User not found'}, status: 404 unless user
     transaction = Transaction.find(params[:id])
-    return render json: { 'message' => 'transaction not found'}, status: 404 unless transaction
 
     ActiveRecord::Base.transaction do
       last_amount = transaction.amount
@@ -96,7 +87,7 @@ class Api::V1::TransactionsController < ApplicationController
         
         render json: transaction.to_json
       else
-        render json: transaction.errors.full_messages, status: :unprocessable_entity
+        render json: {message: transaction.errors}, status: 422
       end
     end
   end
@@ -105,10 +96,7 @@ class Api::V1::TransactionsController < ApplicationController
   # Хэрэглэгчийн гүйлгээ устгах
   def soft_delete
     user = User.find(params[:user_id])
-    return render json: { 'message' => 'User not found'}, status: 404 unless user
-    transaction = Transaction.find(params[:id])
-    return render json: { 'message' => 'transaction not found'}, status: 404 unless transaction
-    
+
     ActiveRecord::Base.transaction do
       if transaction.is_income == true
         user.update(balance: user.balance - transaction.amount)
@@ -119,7 +107,7 @@ class Api::V1::TransactionsController < ApplicationController
       if transaction.update(is_deleted: true)
         render json: {message: "transaction is deleted", transaction: transaction}
       else
-        render json: {message: transaction.errors}, status: :unprocessable_entity
+        render json: {message: transaction.errors}, status: 422
       end
     end
   end
