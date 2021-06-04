@@ -25,9 +25,9 @@ class Api::V1::UsersController < ApplicationController
     end
   end
 
-  # POST /users/:id/soft_delete
+  # DELETE /users/:id
   # Хэрэглэгч устгах
-  def soft_delete
+  def destroy
     user = User.find(params[:id])
     return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
     if user.update(is_deleted: true)
