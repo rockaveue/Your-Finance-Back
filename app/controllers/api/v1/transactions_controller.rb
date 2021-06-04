@@ -10,9 +10,7 @@ class Api::V1::TransactionsController < ApplicationController
     user = User.find_by_id(params[:user_id])
     return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
     transactions = Transaction
-      .getTransactionCategory(params)
-      .getTransactions(params, [true, false], false, nil)
-      .select('*')
+      .getTransactions(params, [true, false], false, nil) 
     return render json: { 'message' => 'Хэрэглэгчийн гүйлгээ олдсонгүй'}, status: 404 unless transactions
     render json: transactions
   end
@@ -126,15 +124,15 @@ class Api::V1::TransactionsController < ApplicationController
   # Өдрөөр анализ мэдээлэл авах
   def getTransactionsByDay
     income = Transaction
-      .getTransactions(params, true, true, 1)
+      .getTransactions(params, true, 1, 1)
     total_income = Transaction
-      .getTransactions(params, true, false, 2)
+      .getTransactions(params, true, nil, 2)
     expense = Transaction
-      .getTransactions(params, false, true, 1)
+      .getTransactions(params, false, 1, 1)
     total_expense = Transaction
-      .getTransactions(params, false, false, 2)
+      .getTransactions(params, false, nil, 2)
     transactions = Transaction
-      .getTransactions(params, [true, false], false, nil)
+      .getTransactions(params, [true, false], nil, nil)
       .select('*')
       .order(transaction_date: :desc)
     render json: {
@@ -147,16 +145,15 @@ class Api::V1::TransactionsController < ApplicationController
   # Хоёр он сарын хоорондох гүйлгээн мэдээлэл
   def getTransactionsByBetweenDate
     income = Transaction
-      .getTransactions(params, true, true, 1)
+      .getTransactions(params, true, 1, 1)
     total_income = Transaction
-      .getTransactions(params, true, false, 2)
+      .getTransactions(params, true, nil, 2)
     expense = Transaction
-      .getTransactions(params, false, true, 1)
+      .getTransactions(params, false, 1, 1)
     total_expense = Transaction
-      .getTransactions(params, false, false, 2)
+      .getTransactions(params, false, nil, 2)
     transactions = Transaction
-      .getTransactionCategory(params)
-      .getTransactions(params, [true, false], false, 3)
+      .getTransactions(params, [true, false], nil, 3)
     render json: {
       "income" => [income, total_income],
       "expense" => [expense, total_expense],
@@ -167,14 +164,9 @@ class Api::V1::TransactionsController < ApplicationController
   # POST /users/:user_id/transactions/getTransactionsByDate
   # Оруулсан он сар дахь гүйлгээний мэдээлэл
   def getTransactionsByDate
-    income = Transaction
-      .getTransactions(params, true, false, nil)
-    expense = Transaction
-      .getTransactions(params, false, false, nil)
-    render json: {
-      "income" => income,
-      "expense" => expense
-    }
+    transactions = Transaction
+      .getTransactions(params, [true, false], nil, nil)
+    render json: transactions
   end
 
   private

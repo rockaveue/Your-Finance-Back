@@ -25,9 +25,8 @@ Rails.application.routes.draw do
         end
         resources :categories, except: :index do
           collection do
-            post :getCategoryAmountByDate
             post :getCategory
-            get :defaultCategory
+            post :getCategoryAmountByParam
           end
         end
       end

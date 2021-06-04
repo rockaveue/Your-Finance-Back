@@ -75,10 +75,42 @@ class Api::V1::CategoriesController < ApplicationController
   end
 
   # POST /users/:user_id/getCategoryAmountByDate
+  # Оруулсан он сараар нийт дүнг ангиллаар авах
+  # :transaction_date param оруулна
+  # Хоёр он сарын хоорондох гүйлгээн дүнг ангиллаар авах
+  # :date_from, :date_to оруулах
   # Өдрөөр нийт дүнг ангиллаар авах
-  def getCategoryAmountByDate
-    category = Transaction.getTransactionCategory(params).select('categories.id, categories.category_name, SUM(transactions.amount) as amount, transactions.transaction_date')
-    render json: category
+  # :number_of_days оруулах
+  def getCategoryAmountByParam
+    income = Transaction.getTransactions(params, true, 2, 4)
+    expense = Transaction.getTransactions(params, false, 2, 4)
+    render json: {
+      income: income,
+      expense: expense
+    }
+  end
+  
+  # POST /users/:user_id/getCategoryAmountByBetweenDate
+  def getCategoryAmountByBetweenDate
+    income = Transaction
+    .getTransactions(params, true, 2, 4)
+    expense = Transaction
+    .getTransactions(params, false, 2, 4)
+    render json: {
+      income: income,
+      expense: expense
+    }
+  end
+  
+  def getCategoryAmountByDay
+    income = Transaction
+    .getTransactions(params, true, 2, 4)
+    expense = Transaction
+    .getTransactions(params, false, 2, 4)
+    render json: {
+      income: income,
+      expense: expense
+    }
   end
   private
 
