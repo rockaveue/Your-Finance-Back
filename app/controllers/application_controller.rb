@@ -46,7 +46,7 @@ class ApplicationController < ActionController::API
   end
 
   def user_authorization
-    if Integer(params[:user_id]) != current_api_v1_user.id
+    if Integer(params[:id]) != current_api_v1_user.id
       render plain: "unauthorized", status: :unauthorized
     end
   end
