@@ -82,36 +82,16 @@ class Api::V1::CategoriesController < ApplicationController
   # Өдрөөр нийт дүнг ангиллаар авах
   # :number_of_days оруулах
   def getCategoryAmountByParam
-    income = Transaction.getTransactions(params, true, 2, 4)
-    expense = Transaction.getTransactions(params, false, 2, 4)
+    income = Transaction
+      .getTransactions(params, true, 2, 4)
+    expense = Transaction
+      .getTransactions(params, false, 2, 4)
     render json: {
       income: income,
       expense: expense
     }
   end
   
-  # POST /users/:user_id/getCategoryAmountByBetweenDate
-  def getCategoryAmountByBetweenDate
-    income = Transaction
-    .getTransactions(params, true, 2, 4)
-    expense = Transaction
-    .getTransactions(params, false, 2, 4)
-    render json: {
-      income: income,
-      expense: expense
-    }
-  end
-  
-  def getCategoryAmountByDay
-    income = Transaction
-    .getTransactions(params, true, 2, 4)
-    expense = Transaction
-    .getTransactions(params, false, 2, 4)
-    render json: {
-      income: income,
-      expense: expense
-    }
-  end
   private
 
   def category_params       
