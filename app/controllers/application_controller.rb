@@ -3,7 +3,13 @@ class ApplicationController < ActionController::API
   respond_to :json
   before_action :authenticate_api_v1_user!
   before_action :generate_new_token
+  rescue_from ActiveRecord::RecordNotFound, :with => :render_404
 
+
+  def render_404
+    render json: {message: "Record Not found"}, status: 404
+  end
+  
   def jwt_subject
     self
   end
@@ -41,13 +47,13 @@ class ApplicationController < ActionController::API
   # params[:user_id] байгаа газар ашиглана
   def authorization
     if Integer(params[:user_id]) != current_api_v1_user.id
-      render plain: "unauthorized", status: :unauthorized
+      render json: {message: 'unauthorized'}, status: 401
     end
   end
 
   def user_authorization
     if Integer(params[:id]) != current_api_v1_user.id
-      render plain: "unauthorized", status: :unauthorized
+      render json: {message: 'unauthorized'}, status: 401
     end
   end
 end

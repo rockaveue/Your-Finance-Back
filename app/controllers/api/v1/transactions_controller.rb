@@ -8,11 +8,8 @@ class Api::V1::TransactionsController < ApplicationController
   def index
     # Pagy::VARS[:items]  = 2
     user = User.find_by_id(params[:user_id])
-    return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
     transactions = Transaction
-      .getTransactions(params, [true, false], false, nil)
-      .select('transactions.id, user_id, transactions.is_income, transaction_date, amount, is_repeat, note, category_name')
-    return render json: { 'message' => 'Хэрэглэгчийн гүйлгээ олдсонгүй'}, status: 404 unless transactions
+      .getTransactions(params, [true, false], false, 5)
     render json: transactions
   end
 
@@ -20,13 +17,11 @@ class Api::V1::TransactionsController < ApplicationController
   # Хэрэглэгчийн гүйлгээ сонгох
   def show
     user = User.find(params[:user_id])
-    return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
     transaction = Transaction.find(params[:id])
-    return render json: { 'message' => 'Хэрэглэгчийн гүйлгээ олдсонгүй'}, status: 404 unless transaction
     if user.id == transaction.user_id
       render json: transaction
     else
-      render json: "Aldaa", status: :unauthorized
+      render json: {message: transaction.errors}, status: 422
     end
   end
 
@@ -34,7 +29,6 @@ class Api::V1::TransactionsController < ApplicationController
   # Гүйлгээ нэмэх
   def create
     user = User.find(params[:user_id])
-    return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
     transaction = Transaction.new(transaction_params)
     transaction.user_id = params[:user_id]
     user_balance = user.balance
@@ -49,13 +43,11 @@ class Api::V1::TransactionsController < ApplicationController
         if user.save
           render json: transaction.to_json
         else
-          render json: user.errors.full_messages
+          render json: {message: transaction.errors}, status: 422
         end
       else
-        render json: transaction.errors.full_messages, status: :unprocessable_entity
+        render json: {message: transaction.errors}, status: 422
       end
-    rescue ActiveRecord::RecordInvalid
-      render json: {"message": transaction.errors.full_messages}, status: :unprocessable_entity
     end
   end
 
@@ -63,9 +55,7 @@ class Api::V1::TransactionsController < ApplicationController
   # Хэрэглэгчийн гүйлгээ өөрчлөх
   def update
     user = User.find(params[:user_id])
-    return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
     transaction = Transaction.find(params[:id])
-    return render json: { 'message' => 'Хэрэглэгчийн гүйлгээ олдсонгүй'}, status: 404 unless transaction
     ActiveRecord::Base.transaction do
       last_amount = transaction.amount
       last_type = transaction.is_income
@@ -94,7 +84,7 @@ class Api::V1::TransactionsController < ApplicationController
         end
         render json: transaction.to_json
       else
-        render json: transaction.errors.full_messages, status: :unprocessable_entity
+        render json: {message: transaction.errors}, status: 422
       end
     end
   end
@@ -103,9 +93,7 @@ class Api::V1::TransactionsController < ApplicationController
   # Хэрэглэгчийн гүйлгээ устгах
   def destroy
     user = User.find(params[:user_id])
-    return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
     transaction = Transaction.find(params[:id])
-    return render json: { 'message' => 'Хэрэглэгчийн гүйлгээ олдсонгүй'}, status: 404 unless transaction
     ActiveRecord::Base.transaction do
       if transaction.is_income == true
         user.update(balance: user.balance - transaction.amount)
@@ -114,9 +102,9 @@ class Api::V1::TransactionsController < ApplicationController
       end
       
       if transaction.update(is_deleted: true)
-        render json: {message: "Устгагдлаа", transaction: transaction}
+        render json: {message: "transaction is deleted", transaction: transaction}
       else
-        render json: transaction.errors.full_messages
+        render json: {message: transaction.errors}, status: 422
       end
     end
   end

@@ -30,6 +30,9 @@ class Transaction < ApplicationRecord
       query = query.select('transactions.is_income, transaction_date, amount, is_repeat, note, category_name')
     elsif selected == 4
       query = query.select('categories.id as category_id, category_name, SUM(amount) as amount')
+    elsif selected == 5
+      query = query.select('transactions.id, user_id, transactions.is_income, transaction_date, amount, is_repeat, note, category_name')
+      selected = nil
     end
 
     if !selected.nil?
