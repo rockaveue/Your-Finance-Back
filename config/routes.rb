@@ -18,21 +18,15 @@ Rails.application.routes.draw do
       resources :users, except: :index do
         resources :transactions do
           collection do
-            post :getDataByDate
-            post :getDataByBetweenDate
-          end
-          member do
-            post :soft_delete
+            post :getTransactionsByParam
+            post :getTransactionsByDate
           end
         end
-        resources :categories do
+        resources :categories, except: :index do
           collection do
-            post :getAmountByType
+            post :getCategoryAmountByParam
             post :getCategory
           end
-        end
-        member do
-          post :soft_delete
         end
       end
       get 'defaultCategory', to: 'categories#defaultAllCategory'
