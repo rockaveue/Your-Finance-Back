@@ -9,9 +9,9 @@ class Api::V1::TransactionsController < ApplicationController
     # Pagy::VARS[:items]  = 2
     user = User.find_by_id(params[:user_id])
     transactions = Transaction
-      .getTransactions(params, [true, false], false)
-      .select('*')
-
+      .getTransactions(params, [true, false], false, nil)
+      .select('transactions.id, user_id, transactions.is_income, transaction_date, amount, is_repeat, note, category_name')
+    return render json: { 'message' => 'Хэрэглэгчийн гүйлгээ олдсонгүй'}, status: 404 unless transactions
     render json: transactions
   end
 
@@ -33,7 +33,6 @@ class Api::V1::TransactionsController < ApplicationController
     user = User.find(params[:user_id])
     transaction = Transaction.new(transaction_params)
     transaction.user_id = params[:user_id]
-    # render json: transaction    
     user_balance = user.balance
     ActiveRecord::Base.transaction do
       if transaction.save
@@ -69,22 +68,23 @@ class Api::V1::TransactionsController < ApplicationController
         user_balance = user.balance
         # хуучин төрөл болон дүн
         # хуучин төрөл шинэ төрөлтэй ижил байвал
-        if last_type == params[:is_income]
-          # төрөл нь орлого бол
-          if params[:is_income] == true
-            # одоогийн дүнгээс хуучин дүнг хасаж баланс дээр нэмнэ
-            user.update(balance: user_balance + (params[:amount] - last_amount))
+        if params[:is_income].present?
+          if last_type == params[:is_income]
+            # төрөл нь орлого бол
+            if params[:is_income] == true
+              # одоогийн дүнгээс хуучин дүнг хасаж баланс дээр нэмнэ
+              user.update(balance: user_balance + (params[:amount] - last_amount))
+            else
+              user.update(balance: user_balance - (params[:amount] - last_amount))
+            end
           else
-            user.update(balance: user_balance - (params[:amount] - last_amount))
-          end
-        else
-          if params[:is_income] == true
-            user.update(balance: user_balance + (params[:amount] + last_amount))
-          else
-            user.update(balance: user_balance - (params[:amount] + last_amount))
+            if params[:is_income] == true
+              user.update(balance: user_balance + (params[:amount] + last_amount))
+            else
+              user.update(balance: user_balance - (params[:amount] + last_amount))
+            end
           end
         end
-        
         render json: transaction.to_json
       else
         render json: {message: transaction.errors}, status: 422
@@ -92,11 +92,13 @@ class Api::V1::TransactionsController < ApplicationController
     end
   end
 
-  # POST /users/:user_id/transaction/:id/soft_delete
+  # DELETE /users/:user_id/transaction/:id
   # Хэрэглэгчийн гүйлгээ устгах
-  def soft_delete
+  def destroy
     user = User.find(params[:user_id])
-
+    return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
+    transaction = Transaction.find(params[:id])
+    return render json: { 'message' => 'Хэрэглэгчийн гүйлгээ олдсонгүй'}, status: 404 unless transaction
     ActiveRecord::Base.transaction do
       if transaction.is_income == true
         user.update(balance: user.balance - transaction.amount)
@@ -112,74 +114,32 @@ class Api::V1::TransactionsController < ApplicationController
     end
   end
 
-  # POST /users/:user_id/transactions/getTransactionsByDay
-  # Өдрөөр анализ мэдээлэл авах
-  def getTransactionsByDay
-    income = Transaction
-      .getTransactions(params, true, true)
-      .select('transaction_date, sum(amount) as amount')
-      .as_json(:except => :id)
-    total_income = Transaction
-      .getTransactions(params, true, false)
-      .select('sum(amount) as total_amount')
-      .as_json(:except => :id)
-    expense = Transaction
-      .getTransactions(params, false, true)
-      .select('transaction_date, sum(amount) as amount')
-      .as_json(:except => :id)
-    total_expense = Transaction
-      .getTransactions(params, false, false)
-      .select('sum(amount) as total_amount')
-      .as_json(:except => :id)
-    transactions = Transaction
-      .getTransactions(params, [true, false], false)
-      .select('*')
-      .order(transaction_date: :desc)
-    render json: {
-      "income" => [income, total_income],
-      "expense" => [expense, total_expense]
-    }
-  end
-
   # POST /users/:user_id/transactions/getTransactionsByBetweenDate
   # Хоёр он сарын хоорондох гүйлгээн мэдээлэл
-  def getTransactionsByBetweenDate
+  def getTransactionsByParam
     income = Transaction
-      .getTransactions(params, true, true)
-      .select('transaction_date, sum(amount) as amount')
-      .as_json(:except => :id)
+      .getTransactions(params, true, 1, 1)
     total_income = Transaction
-      .getTransactions(params, true, false)
-      .select('sum(amount) as total_amount')
-      .as_json(:except => :id)
+      .getTransactions(params, true, nil, 2)
     expense = Transaction
-      .getTransactions(params, false, true)
-      .select('transaction_date, sum(amount) as amount')
-      .as_json(:except => :id)
+      .getTransactions(params, false, 1, 1)
     total_expense = Transaction
-      .getTransactions(params, false, false)
-      .select('sum(amount) as total_amount')
-      .as_json(:except => :id)
+      .getTransactions(params, false, nil, 2)
     transactions = Transaction
-      .getTransactions(params, [true, false], false)
-      .order(transaction_date: :desc)
+      .getTransactions(params, [true, false], nil, 3)
     render json: {
       "income" => [income, total_income],
-      "expense" => [expense, total_expense]
+      "expense" => [expense, total_expense],
+      "transactions" => transactions
     }
   end
 
   # POST /users/:user_id/transactions/getTransactionsByDate
   # Оруулсан он сар дахь гүйлгээний мэдээлэл
   def getTransactionsByDate
-    income = Transaction
-      .getTransactions(params, true, false)
-    expense = Transaction
-      .getTransactions(params, false, false)
-    render json: {
-      "income" => income,
-      "expense" => expense
-    }
+    transactions = Transaction
+      .getTransactions(params, [true, false], nil, nil)
+    render json: transactions
   end
 
   private

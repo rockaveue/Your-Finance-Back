@@ -14,8 +14,8 @@ class Api::V1::CategoriesController < ApplicationController
   def defaultAllCategory
     # categories = Category.where(is_default: true)
     # render json: categories
-    income = Category.where(is_default: true, is_income: true)
-    expense = Category.where(is_default: true, is_income: false)
+    income = Category.where(is_default: true, is_income: true, is_deleted: false)
+    expense = Category.where(is_default: true, is_income: false, is_deleted: false)
     render json: {"income" => income, "expense" => expense}
   end
 
@@ -23,7 +23,11 @@ class Api::V1::CategoriesController < ApplicationController
   # Хэрэглэгчийн категор авах, төрөл тусгавал төрлөөр авах
   def getCategory
     categories = Category.getUserCategories(params)
-    render json: categories
+    
+    income = Category.where(is_default: true, is_income: true, is_deleted: false)
+    expense = Category.where(is_default: true, is_income: false, is_deleted: false)
+    
+    render json: {user: categories, default: [income, expense]}
   end
 
   # POST users/:user_id/categories
@@ -62,6 +66,7 @@ class Api::V1::CategoriesController < ApplicationController
   # Категор устгах
   def destroy
     category = Category.find(params[:id])
+    return render json: { 'message' => 'Категор олдсонгүй'}, status: 404 unless category
     if category.update(is_deleted: true)
       render json: {message: "Category is deleted", category: category}
     else
@@ -69,12 +74,24 @@ class Api::V1::CategoriesController < ApplicationController
     end
   end
 
-  # POST /users/:user_id/getCategoryAmountByDate
+ # POST /users/:user_id/getCategoryAmountByDate
+  # Оруулсан он сараар нийт дүнг ангиллаар авах
+  # :transaction_date param оруулна
+  # Хоёр он сарын хоорондох гүйлгээн дүнг ангиллаар авах
+  # :date_from, :date_to оруулах
   # Өдрөөр нийт дүнг ангиллаар авах
-  def getCategoryAmountByDate
-    category = Transaction.getTransactionCategory(params).select('categories.id, categories.category_name, SUM(transactions.amount) as amount, transactions.transaction_date')
-    render json: category
+  # :number_of_days оруулах
+  def getCategoryAmountByParam
+    income = Transaction
+      .getTransactions(params, true, 2, 4)
+    expense = Transaction
+      .getTransactions(params, false, 2, 4)
+    render json: {
+      income: income,
+      expense: expense
+    }
   end
+  
   private
 
   def category_params       
