@@ -1,10 +1,15 @@
 include Pagy::Backend
 class ApplicationController < ActionController::API
   respond_to :json
-  # TODO test it
-  before_action :authenticate_user!
+  before_action :authenticate_api_v1_user!
   before_action :generate_new_token
+  rescue_from ActiveRecord::RecordNotFound, :with => :render_404
 
+
+  def render_404
+    render json: {message: "Record Not found"}, status: 404
+  end
+  
   def jwt_subject
     self
   end
@@ -41,23 +46,14 @@ class ApplicationController < ActionController::API
   # Simple authorization
   # params[:user_id] байгаа газар ашиглана
   def authorization
-    decoded_token = decode_token
-    if params[:user_id] != decoded_token[0]['sub']
-      # TODO respond 401 status
-      raise "Хандах эрхгүй хэрэглэгч"
+    if Integer(params[:user_id]) != current_api_v1_user.id
+      render json: {message: 'unauthorized'}, status: 401
     end
   end
 
   def user_authorization
-    decoded_token = decode_token
-    if params[:id] != decoded_token[0]['sub']
-      # TODO respond 401 status
-      raise "Хандах эрхгүй хэрэглэгч"
+    if Integer(params[:id]) != current_api_v1_user.id
+      render json: {message: 'unauthorized'}, status: 401
     end
-
-    # if params[:id] != current_user.id
-    #   # TODO respond 401 status
-    #   raise "Хандах эрхгүй хэрэглэгч"
-    # end
   end
 end
