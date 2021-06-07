@@ -9,7 +9,7 @@ class Api::V1::TransactionsController < ApplicationController
     # Pagy::VARS[:items]  = 2
     user = User.find_by_id(params[:user_id])
     transactions = Transaction
-      .getTransactions(transaction_params, [true, false], false, 5)
+      .getTransactions(params, [true, false], false, 5)
     render json: transactions
   end
 
@@ -113,15 +113,15 @@ class Api::V1::TransactionsController < ApplicationController
   # Хоёр он сарын хоорондох гүйлгээн мэдээлэл
   def getTransactionsByParam
     income = Transaction
-      .getTransactions(transaction_params, true, 1, 1)
+      .getTransactions(params, true, 1, 1)
     total_income = Transaction
-      .getTransactions(transaction_params, true, nil, 2)
+      .getTransactions(params, true, nil, 2)
     expense = Transaction
-      .getTransactions(transaction_params, false, 1, 1)
+      .getTransactions(params, false, 1, 1)
     total_expense = Transaction
-      .getTransactions(transaction_params, false, nil, 2)
+      .getTransactions(params, false, nil, 2)
     transactions = Transaction
-      .getTransactions(transaction_params, [true, false], nil, 3)
+      .getTransactions(params, [true, false], nil, 3)
     render json: {
       "income" => [income, total_income],
       "expense" => [expense, total_expense],
@@ -133,12 +133,12 @@ class Api::V1::TransactionsController < ApplicationController
   # Оруулсан он сар дахь гүйлгээний мэдээлэл
   def getTransactionsByDate
     transactions = Transaction
-      .getTransactions(transaction_params, [true, false], nil, nil)
+      .getTransactions(params, [true, false], nil, nil)
     render json: transactions
   end
 
   private
   def transaction_params
-      params.require(:transaction).permit(:category_id, :is_income, :transaction_date, :amount, :is_repeat, :note, :number_of_days, :date_from, :date_to)
+      params.require(:transaction).permit(:user_id, :category_id, :is_income, :transaction_date, :amount, :is_repeat, :note)
   end
 end

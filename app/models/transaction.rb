@@ -1,7 +1,7 @@
 class Transaction < ApplicationRecord
   belongs_to :category
   belongs_to :user
-  
+
   validates :category, presence: true
   validates :user, presence: true
   validates :is_income, inclusion: { in: [ true, false ] }
@@ -15,18 +15,18 @@ class Transaction < ApplicationRecord
     errors.add(:transaction_date, 'must be a valid datetime') if ((transaction_date.is_a?(Date) rescue ArgumentError) == ArgumentError)
   end
 
-  def self.getTransactions(params, is_income, groupByDate, selected)
+  def self.getTransactions(param, is_income, groupByDate, selected)
     query = joins(:category)
-      .where(:user_id => params[:user_id])
+      .where(:user_id => param[:user_id])
       .where(is_income: is_income)
       .where(is_deleted: false)
 
-    if params[:date_from].present?
-      query = query.where('DATE(transaction_date) BETWEEN ? AND ?', params[:date_from], params[:date_to])
-    elsif params[:number_of_days].present?
-      query = query.where('DATE(transaction_date) BETWEEN ? AND ?', params[:number_of_days].days.ago, Time.now)
-    elsif params[:transaction_date].present?
-      query = query.where(:transaction_date => params[:transaction_date])
+    if param[:date_from].present?
+      query = query.where('DATE(transaction_date) BETWEEN ? AND ?', param[:date_from], param[:date_to])
+    elsif param[:number_of_days].present?
+      query = query.where('DATE(transaction_date) BETWEEN ? AND ?', param[:number_of_days].days.ago, Time.now)
+    elsif param[:transaction_date].present?
+      query = query.where(:transaction_date => param[:transaction_date])
     end
 
     if groupByDate == 1
