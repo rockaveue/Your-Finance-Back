@@ -6,6 +6,7 @@ class Transaction < ApplicationRecord
     query = joins(:category)
       .where(:user_id => params[:user_id])
       .where(is_income: is_income)
+      .where(is_deleted: false)
 
     if params[:date_from].present?
       query = query.where('DATE(transaction_date) BETWEEN ? AND ?', params[:date_from], params[:date_to])
