@@ -10,7 +10,8 @@ class Api::V1::TransactionsController < ApplicationController
     user = User.find_by_id(params[:user_id])
     return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
     transactions = Transaction
-      .getTransactions(params, [true, false], false, nil) 
+      .getTransactions(params, [true, false], false, nil)
+      .select('transactions.id, user_id, transactions.is_income, transaction_date, amount, is_repeat, note, category_name')
     return render json: { 'message' => 'Хэрэглэгчийн гүйлгээ олдсонгүй'}, status: 404 unless transactions
     render json: transactions
   end
@@ -120,30 +121,9 @@ class Api::V1::TransactionsController < ApplicationController
     end
   end
 
-  # POST /users/:user_id/transactions/getTransactionsByDay
-  # Өдрөөр анализ мэдээлэл авах
-  def getTransactionsByDay
-    income = Transaction
-      .getTransactions(params, true, 1, 1)
-    total_income = Transaction
-      .getTransactions(params, true, nil, 2)
-    expense = Transaction
-      .getTransactions(params, false, 1, 1)
-    total_expense = Transaction
-      .getTransactions(params, false, nil, 2)
-    transactions = Transaction
-      .getTransactions(params, [true, false], nil, nil)
-      .select('*')
-      .order(transaction_date: :desc)
-    render json: {
-      "income" => [income, total_income],
-      "expense" => [expense, total_expense]
-    }
-  end
-
   # POST /users/:user_id/transactions/getTransactionsByBetweenDate
   # Хоёр он сарын хоорондох гүйлгээн мэдээлэл
-  def getTransactionsByBetweenDate
+  def getTransactionsByParam
     income = Transaction
       .getTransactions(params, true, 1, 1)
     total_income = Transaction
