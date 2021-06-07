@@ -2,15 +2,11 @@ class Category < ApplicationRecord
   has_many :user_categories
   has_one :transactions
 
-  def self.getUserCategories(params)
-    query = joins(:user_categories)
-      .where('user_categories.user_id = ?', params[:user_id])
-      .where(is_deleted: false)
+  validates :category_name, presence: true, length: { maximum: 30 }
+  validates :is_income, inclusion: { in: [ true, false ] }
 
-    if params[:is_income].in? [true, false]
-      query = query.where('is_income = ?', params[:is_income])
-    end
-    
-    return query
+  def self.getUserCategories(user_id)
+    joins(:user_categories).where('user_categories.user_id = ?', user_id)
+    # includes(:user_categories).where(user_categories:{user_id: user_id})
   end
 end

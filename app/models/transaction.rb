@@ -2,43 +2,21 @@ class Transaction < ApplicationRecord
   belongs_to :category
   belongs_to :user
 
-  def self.getTransactionCategory(params)
-    query = joins(:category)
-      .where('user_id = ?', params[:user_id])
-      .where(is_deleted: false)
-    
-    if params[:transaction_date].present?
-      query = query.where('transaction_date = ?', params[:transaction_date])
-    end
+  validates :category, presence: true
+  validates :user, presence: true
+  validates :is_income, inclusion: { in: [ true, false ] }
+  validates :amount, presence: true, numericality: true
+  validates :transaction_date, presence: true
+  validate :transaction_date_is_valid_datetime
+  validates :note, length: { maximum: 255 }
+  validates :is_repeat, inclusion: { in: [true, false] }
 
-    if params[:is_income].in? [true, false]
-      query = query.where('is_income = ?', params[:is_income])
-    end
-
-    if params[:group_column].present?
-      query = query.group(params[:group_column])
-    end
-
-    return query
+  def transaction_date_is_valid_datetime
+    errors.add(:transaction_date, 'must be a valid datetime') if ((transaction_date.is_a?(Date) rescue ArgumentError) == ArgumentError)
   end
 
-  def self.getTransactions(params, is_income, groupByDate)
-    query = where(:user_id => params[:user_id])
-      .where(is_income: is_income)
-      .where(is_deleted: false)
-
-    if params[:date_from].present?
-      query = query.where('DATE(transaction_date) BETWEEN ? AND ?', params[:date_from], params[:date_to])
-    elsif params[:number_of_days].present?
-      query = query.where('DATE(transaction_date) BETWEEN ? AND ?', params[:number_of_days].days.ago, Time.now)
-    elsif params[:transaction_date].present?
-      query = query.where(:transaction_date => params[:transaction_date])
-    end
-
-    if groupByDate
-      query = query.group(:transaction_date)
-    end
-    
-    return query
+  def self.getTransactionCategory(user_id)
+    joins(:category).where('categories.user_id = ?', user_id)
+    # includes(:user_categories).where(user_categories:{user_id: user_id})
   end
 end
