@@ -23,9 +23,9 @@ class Api::V1::UsersController < ApplicationController
     end
   end
 
-  # POST /users/:id/soft_delete
+  # DELETE /users/:id
   # Хэрэглэгч устгах
-  def soft_delete
+  def destory
     user = User.find(params[:id])
     if user.update(is_deleted: true)
         render json: {message: 'User is deleted', data: user}

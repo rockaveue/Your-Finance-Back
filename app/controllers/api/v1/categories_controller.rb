@@ -22,7 +22,7 @@ class Api::V1::CategoriesController < ApplicationController
   # POST users/:user_id/categories/getCategory
   # Хэрэглэгчийн категор авах, төрөл тусгавал төрлөөр авах
   def getCategory
-    categories = Category.getUserCategories(params)
+    categories = Category.getUserCategories(category_params)
     
     income = Category.where(is_default: true, is_income: true, is_deleted: false)
     expense = Category.where(is_default: true, is_income: false, is_deleted: false)
@@ -83,9 +83,9 @@ class Api::V1::CategoriesController < ApplicationController
   # :number_of_days оруулах
   def getCategoryAmountByParam
     income = Transaction
-      .getTransactions(params, true, 2, 4)
+      .getTransactions(category_params, true, 2, 4)
     expense = Transaction
-      .getTransactions(params, false, 2, 4)
+      .getTransactions(category_params, false, 2, 4)
     render json: {
       income: income,
       expense: expense
@@ -95,6 +95,6 @@ class Api::V1::CategoriesController < ApplicationController
   private
 
   def category_params       
-    params.require(:category).permit(:category_name, :is_income, :is_default)
+    params.require(:category).permit(:category_name, :is_income, :is_default, :number_of_days, :date_from, :date_to)
   end
 end
