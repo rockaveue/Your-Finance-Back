@@ -56,6 +56,10 @@ class Api::V1::TransactionsController < ApplicationController
   def update
     user = User.find(params[:user_id])
     transaction = Transaction.find(params[:id])
+<<<<<<< HEAD
+=======
+
+>>>>>>> 6e83b7e81ea3999d507206ed36426ce8a87e61dc
     ActiveRecord::Base.transaction do
       last_amount = transaction.amount
       last_type = transaction.is_income
