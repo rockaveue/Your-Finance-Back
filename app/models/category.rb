@@ -2,6 +2,9 @@ class Category < ApplicationRecord
   has_many :user_categories
   has_one :transactions
 
+  validates :category_name, presence: true, length: { maximum: 30 }
+  validates :is_income, inclusion: { in: [ true, false ] }
+  
   def self.getUserCategories(params)
     query = joins(:user_categories)
       .where('user_categories.user_id = ?', params[:user_id])
