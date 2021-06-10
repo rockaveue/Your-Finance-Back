@@ -15,7 +15,7 @@ class Transaction < ApplicationRecord
     errors.add(:transaction_date, 'must be a valid datetime') if ((transaction_date.is_a?(Date) rescue ArgumentError) == ArgumentError)
   end
 
-  def self.getTransactions(param, is_income, groupByDate, selected)
+  def self.getTransactions(param, is_income, groupBy, selected)
     query = joins(:category)
       .where(:user_id => param[:user_id])
       .where(is_income: is_income)
@@ -29,16 +29,18 @@ class Transaction < ApplicationRecord
       query = query.where(:transaction_date => param[:transaction_date])
     end
 
-    if groupByDate == 1
-      query = query.group(:transaction_date)
-    elsif groupByDate == 2
+    if groupBy == 1
+      query = query.group(:transaction_date).group(:is_income)
+    elsif groupBy == 2
       query = query.group(:category_id)
+    elsif groupBy == 3
+      query = query.group(:is_income)
     end
 
     if selected == 1
-      query = query.select('transaction_date, sum(amount) as amount')
+      query = query.select('transaction_date, sum(amount) as amount, transactions.is_income')
     elsif selected == 2
-      query = query.select('sum(amount) as total_amount')
+      query = query.select('sum(amount) as total_amount, transactions.is_income')
     elsif selected == 3
       query = query.select('transactions.is_income, transaction_date, amount, is_repeat, note, category_name')
     elsif selected == 4

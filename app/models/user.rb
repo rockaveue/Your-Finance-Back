@@ -21,7 +21,4 @@ class User < ApplicationRecord
       false
     end
   end
-  def to_json(arg)
-    UserSerializer.new(self).to_json
-  end
 end

@@ -41,9 +41,9 @@ class Api::V1::TransactionsController < ApplicationController
         end
         user.balance = user_balance
         if user.save
-          render json: transaction.to_json
+          render json: transaction
         else
-          render json: {message: transaction.errors}, status: 422
+          render json: {message: user.errors}, status: 422
         end
       else
         render json: {message: transaction.errors}, status: 422
@@ -112,20 +112,27 @@ class Api::V1::TransactionsController < ApplicationController
   # POST /users/:user_id/transactions/getTransactionsByBetweenDate
   # Хоёр он сарын хоорондох гүйлгээн мэдээлэл
   def getTransactionsByParam
-    income = Transaction
-      .getTransactions(params, true, 1, 1)
-    total_income = Transaction
-      .getTransactions(params, true, nil, 2)
-    expense = Transaction
-      .getTransactions(params, false, 1, 1)
-    total_expense = Transaction
-      .getTransactions(params, false, nil, 2)
     transactions = Transaction
       .getTransactions(params, [true, false], nil, 3)
+
+    grouped = transactions
+      .group_by{|h| h["is_income"]}
+      .transform_values do |h2|
+        h2.group_by{|y| y["transaction_date"]}
+          .map do |k, v| {
+            :transaction_date => k.to_s, 
+            :amount => v.map {|h1| h1["amount"]}.inject(:+)}
+          end
+      end
+    total_amount = transactions
+      .group_by{|h| h["is_income"]}.map do |k, c|{
+        :total_amount => c.map {|h1| h1["amount"]}.reduce(:+)
+      }
+    end
     render json: {
-      "income" => [income, total_income],
-      "expense" => [expense, total_expense],
-      "transactions" => transactions
+      grouped: grouped, 
+      total: total_amount, 
+      transactions: transactions
     }
   end
 
