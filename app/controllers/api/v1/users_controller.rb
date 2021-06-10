@@ -23,6 +23,18 @@ class Api::V1::UsersController < ApplicationController
     end
   end
 
+  # PATCH /users/:id
+  def update_password
+    user = User.find(params[:id])
+    if user.update(user_params)
+      # Sign in the user by passing validation in case their password changed
+      bypass_sign_in(user)
+      render json: user
+    else
+      render json: {message: user.errors}, status: 422
+    end
+  end
+
   # DELETE /users/:id
   # Хэрэглэгч устгах
   def destory
@@ -36,6 +48,6 @@ class Api::V1::UsersController < ApplicationController
 
   private
   def user_params
-      params.require(:user).permit(:email, :password, :balance, :last_name, :first_name)
+      params.require(:user).permit(:email, :current_password, :password, :password_confirmation, :balance, :last_name, :first_name)
   end
 end

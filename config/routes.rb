@@ -12,6 +12,7 @@ Rails.application.routes.draw do
                   controllers: {
                     sessions: 'api/v1/users/sessions',
                     registrations: 'api/v1/users/registrations',
+                    users: 'api/v1/users_controller'
                   }
       # resources :sessions, only: [:create, :destroy]
       # resources :registrations, only: [:create, :destroy]
@@ -27,6 +28,9 @@ Rails.application.routes.draw do
             post :getCategoryAmountByParam
             post :getCategory
           end
+        end
+        member do
+          patch :update_password
         end
       end
       get 'defaultCategory', to: 'categories#defaultAllCategory'
