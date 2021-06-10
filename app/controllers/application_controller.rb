@@ -19,7 +19,7 @@ class ApplicationController < ActionController::API
   # Шинэ токен үүсгэх
   def generate_new_token
     response.headers['Authorization'] = 'Bearer '+ Warden::JWTAuth::UserEncoder.new.call(current_api_v1_user, :api_v1_user, nil).first
-    add_to_blacklist
+    add_to_blacklist unless params[:reset_password_token].present?
   end
 
   # Blacklist рүү нэмэх

@@ -41,8 +41,8 @@ Devise.setup do |config|
   config.mailer_sender = ENV["EMAIL"]
 
   # Configure the class responsible to send e-mails.
-  config.mailer = 'Devise::Mailer'
-  # config.mailer = 'UserMailer'
+  # config.mailer = 'Devise::Mailer'
+  config.mailer = 'PasswordMailer'
 
   # config.action_mailer.default_url_options = { :host => 'localhost:3000' }
   # config.action_mailer.delivery_method = :smtp

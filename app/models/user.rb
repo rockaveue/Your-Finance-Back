@@ -11,4 +11,17 @@ class User < ApplicationRecord
   # has_secure_password
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
+  def reset_password(param)
+    if param[:password].present?
+      self.password = param[:password]
+      self.password_confirmation = param[:password_confirmation]
+      save
+    else
+      errors.add(:password, :blank)
+      false
+    end
+  end
+  def to_json(arg)
+    UserSerializer.new(self).to_json
+  end
 end
