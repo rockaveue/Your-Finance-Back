@@ -9,7 +9,9 @@ class Api::V1::TransactionsController < ApplicationController
     # Pagy::VARS[:items]  = 2
     user = User.find_by_id(params[:user_id])
     transactions = Transaction
-      .getTransactions(params, [true, false], false, 5)
+      .getTransactions(params, [true, false], false)
+      .select('*')
+
     render json: transactions
   end
 
@@ -31,6 +33,7 @@ class Api::V1::TransactionsController < ApplicationController
     user = User.find(params[:user_id])
     transaction = Transaction.new(transaction_params)
     transaction.user_id = params[:user_id]
+    # render json: transaction    
     user_balance = user.balance
     ActiveRecord::Base.transaction do
       if transaction.save
@@ -65,23 +68,22 @@ class Api::V1::TransactionsController < ApplicationController
         user_balance = user.balance
         # хуучин төрөл болон дүн
         # хуучин төрөл шинэ төрөлтэй ижил байвал
-        if params[:is_income].present?
-          if last_type == params[:is_income]
-            # төрөл нь орлого бол
-            if params[:is_income] == true
-              # одоогийн дүнгээс хуучин дүнг хасаж баланс дээр нэмнэ
-              user.update(balance: user_balance + (params[:amount] - last_amount))
-            else
-              user.update(balance: user_balance - (params[:amount] - last_amount))
-            end
+        if last_type == params[:is_income]
+          # төрөл нь орлого бол
+          if params[:is_income] == true
+            # одоогийн дүнгээс хуучин дүнг хасаж баланс дээр нэмнэ
+            user.update(balance: user_balance + (params[:amount] - last_amount))
           else
-            if params[:is_income] == true
-              user.update(balance: user_balance + (params[:amount] + last_amount))
-            else
-              user.update(balance: user_balance - (params[:amount] + last_amount))
-            end
+            user.update(balance: user_balance - (params[:amount] - last_amount))
+          end
+        else
+          if params[:is_income] == true
+            user.update(balance: user_balance + (params[:amount] + last_amount))
+          else
+            user.update(balance: user_balance - (params[:amount] + last_amount))
           end
         end
+        
         render json: transaction.to_json
       else
         render json: {message: transaction.errors}, status: 422
@@ -89,11 +91,11 @@ class Api::V1::TransactionsController < ApplicationController
     end
   end
 
-  # DELETE /users/:user_id/transaction/:id
+  # POST /users/:user_id/transaction/:id/soft_delete
   # Хэрэглэгчийн гүйлгээ устгах
-  def destroy
+  def soft_delete
     user = User.find(params[:user_id])
-    transaction = Transaction.find(params[:id])
+
     ActiveRecord::Base.transaction do
       if transaction.is_income == true
         user.update(balance: user.balance - transaction.amount)
@@ -109,36 +111,78 @@ class Api::V1::TransactionsController < ApplicationController
     end
   end
 
-  # POST /users/:user_id/transactions/getTransactionsByBetweenDate
-  # Хоёр он сарын хоорондох гүйлгээн мэдээлэл
-  def getTransactionsByParam
+  # POST /users/:user_id/transactions/getTransactionsByDay
+  # Өдрөөр анализ мэдээлэл авах
+  def getTransactionsByDay
     income = Transaction
-      .getTransactions(params, true, 1, 1)
+      .getTransactions(params, true, true)
+      .select('transaction_date, sum(amount) as amount')
+      .as_json(:except => :id)
     total_income = Transaction
-      .getTransactions(params, true, nil, 2)
+      .getTransactions(params, true, false)
+      .select('sum(amount) as total_amount')
+      .as_json(:except => :id)
     expense = Transaction
-      .getTransactions(params, false, 1, 1)
+      .getTransactions(params, false, true)
+      .select('transaction_date, sum(amount) as amount')
+      .as_json(:except => :id)
     total_expense = Transaction
-      .getTransactions(params, false, nil, 2)
+      .getTransactions(params, false, false)
+      .select('sum(amount) as total_amount')
+      .as_json(:except => :id)
     transactions = Transaction
-      .getTransactions(params, [true, false], nil, 3)
+      .getTransactions(params, [true, false], false)
+      .select('*')
+      .order(transaction_date: :desc)
     render json: {
       "income" => [income, total_income],
-      "expense" => [expense, total_expense],
-      "transactions" => transactions
+      "expense" => [expense, total_expense]
+    }
+  end
+
+  # POST /users/:user_id/transactions/getTransactionsByBetweenDate
+  # Хоёр он сарын хоорондох гүйлгээн мэдээлэл
+  def getTransactionsByBetweenDate
+    income = Transaction
+      .getTransactions(params, true, true)
+      .select('transaction_date, sum(amount) as amount')
+      .as_json(:except => :id)
+    total_income = Transaction
+      .getTransactions(params, true, false)
+      .select('sum(amount) as total_amount')
+      .as_json(:except => :id)
+    expense = Transaction
+      .getTransactions(params, false, true)
+      .select('transaction_date, sum(amount) as amount')
+      .as_json(:except => :id)
+    total_expense = Transaction
+      .getTransactions(params, false, false)
+      .select('sum(amount) as total_amount')
+      .as_json(:except => :id)
+    transactions = Transaction
+      .getTransactions(params, [true, false], false)
+      .order(transaction_date: :desc)
+    render json: {
+      "income" => [income, total_income],
+      "expense" => [expense, total_expense]
     }
   end
 
   # POST /users/:user_id/transactions/getTransactionsByDate
   # Оруулсан он сар дахь гүйлгээний мэдээлэл
   def getTransactionsByDate
-    transactions = Transaction
-      .getTransactions(params, [true, false], nil, nil)
-    render json: transactions
+    income = Transaction
+      .getTransactions(params, true, false)
+    expense = Transaction
+      .getTransactions(params, false, false)
+    render json: {
+      "income" => income,
+      "expense" => expense
+    }
   end
 
   private
   def transaction_params
-      params.require(:transaction).permit(:user_id, :category_id, :is_income, :transaction_date, :amount, :is_repeat, :note)
+      params.require(:transaction).permit(:category_id, :is_income, :transaction_date, :amount, :is_repeat, :note)
   end
 end

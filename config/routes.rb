@@ -29,6 +29,9 @@ Rails.application.routes.draw do
             post :getCategory
           end
         end
+        member do
+          patch :update_password
+        end
       end
       get 'defaultCategory', to: 'categories#defaultAllCategory'
     end
