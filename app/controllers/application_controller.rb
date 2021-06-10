@@ -3,8 +3,14 @@ class ApplicationController < ActionController::API
   respond_to :json
   before_action :authenticate_api_v1_user!
   before_action :generate_new_token
+  before_action :configure_permitted_parameters, if: :devise_controller?
   rescue_from ActiveRecord::RecordNotFound, :with => :render_404
+  
 
+  def configure_permitted_parameters
+    update_attrs = [:password, :password_confirmation, :current_password]
+    devise_parameter_sanitizer.permit :account_update, keys: update_attrs
+  end
 
   def render_404
     render json: {message: "Record Not found"}, status: 404

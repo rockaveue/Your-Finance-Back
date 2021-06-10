@@ -1,6 +1,7 @@
 class User < ApplicationRecord
   has_many :transactions
   has_many :user_categories
+  has_secure_password :validations => false
 
   devise :database_authenticatable, :registerable, :recoverable, :rememberable, :validatable, :jwt_authenticatable, jwt_revocation_strategy: JwtBlacklist
   
@@ -20,8 +21,5 @@ class User < ApplicationRecord
       errors.add(:password, :blank)
       false
     end
-  end
-  def to_json(arg)
-    UserSerializer.new(self).to_json
   end
 end
