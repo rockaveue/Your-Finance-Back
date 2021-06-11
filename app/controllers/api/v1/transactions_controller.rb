@@ -140,7 +140,7 @@ class Api::V1::TransactionsController < ApplicationController
   # Оруулсан он сар дахь гүйлгээний мэдээлэл
   def getTransactionsByDate
     transactions = Transaction
-      .getTransactions(params, [true, false], nil, nil)
+      .getTransactions(params, [true, false], nil, 5)
     render json: transactions
   end
 
