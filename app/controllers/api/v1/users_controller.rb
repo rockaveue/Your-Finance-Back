@@ -1,6 +1,6 @@
 class Api::V1::UsersController < ApplicationController
 
-  before_action :user_authorization
+  # before_action :user_authorization
 
   # GET /users/:id
   # Хэрэглэгчийн сонгох
@@ -37,7 +37,7 @@ class Api::V1::UsersController < ApplicationController
 
   # DELETE /users/:id
   # Хэрэглэгч устгах
-  def destory
+  def destroy
     user = User.find(params[:id])
     if user.update(is_deleted: true)
         render json: {message: 'User is deleted', data: user}
