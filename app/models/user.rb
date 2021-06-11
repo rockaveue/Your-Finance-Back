@@ -1,6 +1,7 @@
 class User < ApplicationRecord
   has_many :transactions
   has_many :user_categories
+  has_secure_password :validations => false
 
   devise :database_authenticatable, :registerable, :recoverable, :rememberable, :validatable, :jwt_authenticatable, jwt_revocation_strategy: JwtBlacklist
   

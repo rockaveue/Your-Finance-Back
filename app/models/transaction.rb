@@ -15,10 +15,9 @@ class Transaction < ApplicationRecord
     errors.add(:transaction_date, 'must be a valid datetime') if ((transaction_date.is_a?(Date) rescue ArgumentError) == ArgumentError)
   end
 
-  def self.getTransactions(param, is_income, groupBy, selected)
+  def self.getTransactions(param, selected)
     query = joins(:category)
       .where(:user_id => param[:user_id])
-      .where(is_income: is_income)
       .where(is_deleted: false)
 
     if param[:date_from].present?
@@ -29,14 +28,6 @@ class Transaction < ApplicationRecord
       query = query.where(:transaction_date => param[:transaction_date])
     end
 
-    if groupBy == 1
-      query = query.group(:transaction_date).group(:is_income)
-    elsif groupBy == 2
-      query = query.group(:category_id)
-    elsif groupBy == 3
-      query = query.group(:is_income)
-    end
-
     if selected == 1
       query = query.select('transaction_date, sum(amount) as amount, transactions.is_income')
     elsif selected == 2
@@ -44,7 +35,7 @@ class Transaction < ApplicationRecord
     elsif selected == 3
       query = query.select('transactions.is_income, transaction_date, amount, is_repeat, note, category_name')
     elsif selected == 4
-      query = query.select('categories.id as category_id, category_name, SUM(amount) as amount')
+      query = query.select('categories.id as category_id, category_name, amount, transaction_date, transactions.is_income')
     elsif selected == 5
       query = query.select('transactions.id, user_id, transactions.is_income, transaction_date, amount, is_repeat, note, category_name')
       selected = nil
@@ -55,5 +46,41 @@ class Transaction < ApplicationRecord
     end
     
     return query
+  end
+
+  # Өдрөөр ангилан өдөр болон нийт дүнг бодох
+  def self.group_by_date(transaction)
+    transaction = transaction
+      .group_by{|h| h["transaction_date"]}
+      .map do |k,v| {
+        :transaction_date => k.to_s,
+        :amount => v
+          .map {|h1| h1["amount"]}
+          .inject(:+)
+      }end
+  end
+  # Нийт дүнг олох
+  def self.map_inject_amount(transaction)
+    transaction = transaction
+      .map {|k| k[:amount]}
+      .inject(:+)
+  end
+  # is_income-оор 2 хуваах
+  def self.partition_by_is_income(transaction)
+    transaction = transaction
+      .partition{|v| v["is_income"]}
+  end
+  # category_id-аар ангилан id, category_name, transaction_date болон дүнгийн нийлбэр бодох
+  def self.group_by_category_and_map(transaction)
+    transaction = transaction
+      .group_by{|t| t["category_id"]}
+      .map do |k, v| {
+        id: k,
+        category_name: v[0]["category_name"],
+        amount: v
+          .map{|h| h["amount"]}
+          .reduce(:+),
+        transaction_date: v[0]["transaction_date"]
+      }end
   end
 end

@@ -12,20 +12,25 @@ class Api::V1::CategoriesController < ApplicationController
   # GET /default_category
   # Default Category авах
   def defaultAllCategory
-    # categories = Category.where(is_default: true)
-    # render json: categories
-    income = Category.where(is_default: true, is_income: true, is_deleted: false)
-    expense = Category.where(is_default: true, is_income: false, is_deleted: false)
-    render json: {"income" => income, "expense" => expense}
+    categories = Category
+      .is_default_and_not_deleted
+    income, expense = Transaction
+      .partition_by_is_income(categories)
+    render json: {
+      income: income, 
+      expense: expense
+    }
   end
-
+  
   # POST users/:user_id/categories/getCategory
   # Хэрэглэгчийн категор авах, төрөл тусгавал төрлөөр авах
   def getCategory
-    categories = Category.getUserCategories(params)
-    
-    income = Category.where(is_default: true, is_income: true, is_deleted: false)
-    expense = Category.where(is_default: true, is_income: false, is_deleted: false)
+    categories = Category
+      .getUserCategories(category_analyse_params)
+    default_category = Category
+      .is_default_and_not_deleted
+    income, expense = Transaction
+      .partition_by_is_income(default_category)
     
     render json: {user: categories, default: [income, expense]}
   end
@@ -82,10 +87,14 @@ class Api::V1::CategoriesController < ApplicationController
   # Өдрөөр нийт дүнг ангиллаар авах
   # :number_of_days оруулах
   def getCategoryAmountByParam
+    transactions = Transaction
+      .getTransactions(category_analyse_params, 4)
+    category_income, category_expense = Transaction
+      .partition_by_is_income(transactions)
     income = Transaction
-      .getTransactions(params, true, 2, 4)
+      .group_by_category_and_map(category_income)
     expense = Transaction
-      .getTransactions(params, false, 2, 4)
+      .group_by_category_and_map(category_expense)
     render json: {
       income: income,
       expense: expense
@@ -97,4 +106,7 @@ class Api::V1::CategoriesController < ApplicationController
   def category_params       
     params.require(:category).permit(:category_name, :is_income)
   end
+  def category_analyse_params
+    params.permit(:date_from, :date_to, :number_of_days, :transaction_date, :user_id, :is_income)
+  end  
 end
