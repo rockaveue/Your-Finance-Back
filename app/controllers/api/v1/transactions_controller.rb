@@ -8,11 +8,8 @@ class Api::V1::TransactionsController < ApplicationController
   def index
     # Pagy::VARS[:items]  = 2
     user = User.find_by_id(params[:user_id])
-    return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
     transactions = Transaction
-      .getTransactions(params, [true, false], false, nil)
-      .select('transactions.id, user_id, transactions.is_income, transaction_date, amount, is_repeat, note, category_name')
-    return render json: { 'message' => 'Хэрэглэгчийн гүйлгээ олдсонгүй'}, status: 404 unless transactions
+      .getTransactions(params, [true, false], false, 5)
     render json: transactions
   end
 
@@ -20,13 +17,11 @@ class Api::V1::TransactionsController < ApplicationController
   # Хэрэглэгчийн гүйлгээ сонгох
   def show
     user = User.find(params[:user_id])
-    return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
     transaction = Transaction.find(params[:id])
-    return render json: { 'message' => 'Хэрэглэгчийн гүйлгээ олдсонгүй'}, status: 404 unless transaction
     if user.id == transaction.user_id
       render json: transaction
     else
-      render json: "Aldaa", status: :unauthorized
+      render json: {message: transaction.errors}, status: 422
     end
   end
 
@@ -34,7 +29,6 @@ class Api::V1::TransactionsController < ApplicationController
   # Гүйлгээ нэмэх
   def create
     user = User.find(params[:user_id])
-    return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
     transaction = Transaction.new(transaction_params)
     transaction.user_id = params[:user_id]
     user_balance = user.balance
@@ -47,15 +41,13 @@ class Api::V1::TransactionsController < ApplicationController
         end
         user.balance = user_balance
         if user.save
-          render json: transaction.to_json
+          render json: transaction
         else
-          render json: user.errors.full_messages
+          render json: {message: user.errors}, status: 422
         end
       else
-        render json: transaction.errors.full_messages, status: :unprocessable_entity
+        render json: {message: transaction.errors}, status: 422
       end
-    rescue ActiveRecord::RecordInvalid
-      render json: {"message": transaction.errors.full_messages}, status: :unprocessable_entity
     end
   end
 
@@ -63,9 +55,7 @@ class Api::V1::TransactionsController < ApplicationController
   # Хэрэглэгчийн гүйлгээ өөрчлөх
   def update
     user = User.find(params[:user_id])
-    return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
     transaction = Transaction.find(params[:id])
-    return render json: { 'message' => 'Хэрэглэгчийн гүйлгээ олдсонгүй'}, status: 404 unless transaction
     ActiveRecord::Base.transaction do
       last_amount = transaction.amount
       last_type = transaction.is_income
@@ -94,7 +84,7 @@ class Api::V1::TransactionsController < ApplicationController
         end
         render json: transaction.to_json
       else
-        render json: transaction.errors.full_messages, status: :unprocessable_entity
+        render json: {message: transaction.errors}, status: 422
       end
     end
   end
@@ -103,9 +93,7 @@ class Api::V1::TransactionsController < ApplicationController
   # Хэрэглэгчийн гүйлгээ устгах
   def destroy
     user = User.find(params[:user_id])
-    return render json: { 'message' => 'Хэрэглэгч олдсонгүй'}, status: 404 unless user
     transaction = Transaction.find(params[:id])
-    return render json: { 'message' => 'Хэрэглэгчийн гүйлгээ олдсонгүй'}, status: 404 unless transaction
     ActiveRecord::Base.transaction do
       if transaction.is_income == true
         user.update(balance: user.balance - transaction.amount)
@@ -114,9 +102,9 @@ class Api::V1::TransactionsController < ApplicationController
       end
       
       if transaction.update(is_deleted: true)
-        render json: {message: "Устгагдлаа", transaction: transaction}
+        render json: {message: "transaction is deleted", transaction: transaction}
       else
-        render json: transaction.errors.full_messages
+        render json: {message: transaction.errors}, status: 422
       end
     end
   end
@@ -124,20 +112,27 @@ class Api::V1::TransactionsController < ApplicationController
   # POST /users/:user_id/transactions/getTransactionsByBetweenDate
   # Хоёр он сарын хоорондох гүйлгээн мэдээлэл
   def getTransactionsByParam
-    income = Transaction
-      .getTransactions(params, true, 1, 1)
-    total_income = Transaction
-      .getTransactions(params, true, nil, 2)
-    expense = Transaction
-      .getTransactions(params, false, 1, 1)
-    total_expense = Transaction
-      .getTransactions(params, false, nil, 2)
     transactions = Transaction
       .getTransactions(params, [true, false], nil, 3)
+
+    grouped = transactions
+      .group_by{|h| h["is_income"]}
+      .transform_values do |h2|
+        h2.group_by{|y| y["transaction_date"]}
+          .map do |k, v| {
+            :transaction_date => k.to_s, 
+            :amount => v.map {|h1| h1["amount"]}.inject(:+)}
+          end
+      end
+    total_amount = transactions
+      .group_by{|h| h["is_income"]}.map do |k, c|{
+        :total_amount => c.map {|h1| h1["amount"]}.reduce(:+)
+      }
+    end
     render json: {
-      "income" => [income, total_income],
-      "expense" => [expense, total_expense],
-      "transactions" => transactions
+      grouped: grouped, 
+      total: total_amount, 
+      transactions: transactions
     }
   end
 
@@ -145,12 +140,12 @@ class Api::V1::TransactionsController < ApplicationController
   # Оруулсан он сар дахь гүйлгээний мэдээлэл
   def getTransactionsByDate
     transactions = Transaction
-      .getTransactions(params, [true, false], nil, nil)
+      .getTransactions(params, [true, false], nil, 5)
     render json: transactions
   end
 
   private
   def transaction_params
-      params.require(:transaction).permit(:category_id, :is_income, :transaction_date, :amount, :is_repeat, :note)
+      params.require(:transaction).permit(:user_id, :category_id, :is_income, :transaction_date, :amount, :is_repeat, :note)
   end
 end

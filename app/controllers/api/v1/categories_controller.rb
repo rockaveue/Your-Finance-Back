@@ -43,10 +43,10 @@ class Api::V1::CategoriesController < ApplicationController
         if userCategory.save
           render json: category  
         else            
-          render json: {errors: userCategory.errors}, status: :unprocessable_entity
+          render json: {message: userCategory.errors}, status: 422
         end
       else
-        render json: {errors: category.errors}, status: :unprocessable_entity
+        render json: {message: category.errors}, status: 422
       end 
     end
   end
@@ -58,7 +58,7 @@ class Api::V1::CategoriesController < ApplicationController
     if category.update(category_params)
       render json: category
     else
-      render json: category.errors, status: :unprocessable_entity
+      render json: {message: category.errors}, status: 422
     end
   end
 
@@ -68,9 +68,9 @@ class Api::V1::CategoriesController < ApplicationController
     category = Category.find(params[:id])
     return render json: { 'message' => 'Категор олдсонгүй'}, status: 404 unless category
     if category.update(is_deleted: true)
-      render json: {message: "Устгагдлаа", category: category}
+      render json: {message: "Category is deleted", category: category}
     else
-      render json: {errors: category.errors}, status: :unprocessable_entity
+      render json: {message: category.errors}, status: 422
     end
   end
 
