@@ -1,7 +1,7 @@
 
 class Api::V1::TransactionsController < ApplicationController
 
-  before_action :authorization
+  # before_action :authorization
     
   # GET /users/:user_id/transactions
   # Хэрэглэгчийн бүх гүйлгээ авах
@@ -114,24 +114,28 @@ class Api::V1::TransactionsController < ApplicationController
   def getTransactionsByParam
     transactions = Transaction
       .getTransactions(params, [true, false], nil, 3)
-
-    grouped = transactions
-      .group_by{|h| h["is_income"]}
-      .transform_values do |h2|
-        h2.group_by{|y| y["transaction_date"]}
-          .map do |k, v| {
-            :transaction_date => k.to_s, 
-            :amount => v.map {|h1| h1["amount"]}.inject(:+)}
-          end
-      end
-    total_amount = transactions
-      .group_by{|h| h["is_income"]}.map do |k, c|{
-        :total_amount => c.map {|h1| h1["amount"]}.reduce(:+)
-      }
-    end
+    income, expense = transactions.partition{|v| v["is_income"]}
+    grouped_income = income
+      .group_by{|h| h["transaction_date"]}
+      .map do |k,v| {
+        :transaction_date => k.to_s,
+        :amount => v.map {|h1| h1["amount"]}.inject(:+)
+      }end
+    total_income = grouped_income
+      .map {|k| k[:amount]}
+      .inject(:+)
+    grouped_expense = expense
+      .group_by{|h| h["transaction_date"]}
+      .map do |k,v| {
+        :transaction_date => k.to_s,
+        :amount => v.map {|h1| h1["amount"]}.inject(:+)
+      }end
+    total_expense = grouped_expense
+      .map {|k| k[:amount]}
+      .inject(:+)
     render json: {
-      grouped: grouped, 
-      total: total_amount, 
+      income: [grouped_income, [{total_amount:total_income}]],
+      expense: [grouped_expense, [{total_amount:total_expense}]],
       transactions: transactions
     }
   end
