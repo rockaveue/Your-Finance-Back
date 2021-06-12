@@ -5,7 +5,7 @@ class Api::V1::Users::RegistrationsController < Devise::RegistrationsController
   def create
     resource = build_resource(sign_up_params)
     if resource.save
-      UserMailer.welcome_email(resource).deliver
+      UserMailer.welcome_email(resource).deliver_now
       register_success && return if resource.persisted?
     else
       render json: {message: resource.errors}, status: 422
