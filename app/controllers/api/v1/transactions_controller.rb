@@ -9,7 +9,7 @@ class Api::V1::TransactionsController < ApplicationController
     # Pagy::VARS[:items]  = 2
     user = User.find_by_id(params[:user_id])
     transactions = Transaction
-      .getTransactions(params, [true, false], false, 5)
+      .getTransactions(transactions_analyse_params, 5)
     render json: transactions
   end
 
@@ -41,9 +41,9 @@ class Api::V1::TransactionsController < ApplicationController
         end
         user.balance = user_balance
         if user.save
-          render json: transaction.to_json
+          render json: transaction
         else
-          render json: {message: transaction.errors}, status: 422
+          render json: {message: user.errors}, status: 422
         end
       else
         render json: {message: transaction.errors}, status: 422
@@ -112,20 +112,22 @@ class Api::V1::TransactionsController < ApplicationController
   # POST /users/:user_id/transactions/getTransactionsByBetweenDate
   # Хоёр он сарын хоорондох гүйлгээн мэдээлэл
   def getTransactionsByParam
-    income = Transaction
-      .getTransactions(params, true, 1, 1)
-    total_income = Transaction
-      .getTransactions(params, true, nil, 2)
-    expense = Transaction
-      .getTransactions(params, false, 1, 1)
-    total_expense = Transaction
-      .getTransactions(params, false, nil, 2)
     transactions = Transaction
-      .getTransactions(params, [true, false], nil, 3)
+      .getTransactions(transactions_analyse_params, 3)
+    income, expense = Transaction
+      .partition_by_is_income(transactions)
+    grouped_income = Transaction
+      .group_by_date(income)
+    total_income = Transaction
+      .map_inject_amount(grouped_income)
+    grouped_expense = Transaction
+      .group_by_date(expense)
+    total_expense = Transaction
+    .map_inject_amount(grouped_expense)
     render json: {
-      "income" => [income, total_income],
-      "expense" => [expense, total_expense],
-      "transactions" => transactions
+      income: [grouped_income, [{total_amount:total_income}]],
+      expense: [grouped_expense, [{total_amount:total_expense}]],
+      transactions: transactions
     }
   end
 
@@ -133,12 +135,15 @@ class Api::V1::TransactionsController < ApplicationController
   # Оруулсан он сар дахь гүйлгээний мэдээлэл
   def getTransactionsByDate
     transactions = Transaction
-      .getTransactions(params, [true, false], nil, nil)
+      .getTransactions(transactions_analyse_params, 5)
     render json: transactions
   end
 
   private
   def transaction_params
       params.require(:transaction).permit(:user_id, :category_id, :is_income, :transaction_date, :amount, :is_repeat, :note)
+  end
+  def transactions_analyse_params
+    params.permit(:date_from, :date_to, :number_of_days, :transaction_date, :user_id)
   end
 end

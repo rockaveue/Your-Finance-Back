@@ -5,6 +5,8 @@ class Category < ApplicationRecord
   validates :category_name, presence: true, length: { maximum: 30 }
   validates :is_income, inclusion: { in: [ true, false ] }
   
+  scope :is_default_and_not_deleted, -> { where(is_default: true, is_deleted: false)}
+
   def self.getUserCategories(params)
     query = joins(:user_categories)
       .where('user_categories.user_id = ?', params[:user_id])

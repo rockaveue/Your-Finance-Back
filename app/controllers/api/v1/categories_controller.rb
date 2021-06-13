@@ -12,20 +12,25 @@ class Api::V1::CategoriesController < ApplicationController
   # GET /default_category
   # Default Category авах
   def defaultAllCategory
-    # categories = Category.where(is_default: true)
-    # render json: categories
-    income = Category.where(is_default: true, is_income: true, is_deleted: false)
-    expense = Category.where(is_default: true, is_income: false, is_deleted: false)
-    render json: {"income" => income, "expense" => expense}
+    categories = Category
+      .is_default_and_not_deleted
+    income, expense = Transaction
+      .partition_by_is_income(categories)
+    render json: {
+      income: income, 
+      expense: expense
+    }
   end
-
+  
   # POST users/:user_id/categories/getCategory
   # Хэрэглэгчийн категор авах, төрөл тусгавал төрлөөр авах
   def getCategory
-    categories = Category.getUserCategories(params)
-    
-    income = Category.where(is_default: true, is_income: true, is_deleted: false)
-    expense = Category.where(is_default: true, is_income: false, is_deleted: false)
+    categories = Category
+      .getUserCategories(category_analyse_params)
+    default_category = Category
+      .is_default_and_not_deleted
+    income, expense = Transaction
+      .partition_by_is_income(default_category)
     
     render json: {user: categories, default: [income, expense]}
   end
@@ -41,7 +46,7 @@ class Api::V1::CategoriesController < ApplicationController
           :user_id => params[:user_id]
         )
         if userCategory.save
-          render json: {status: 'category created', data: category.to_json}    
+          render json: category  
         else            
           render json: {message: userCategory.errors}, status: 422
         end
@@ -66,7 +71,6 @@ class Api::V1::CategoriesController < ApplicationController
   # Категор устгах
   def destroy
     category = Category.find(params[:id])
-    return render json: { 'message' => 'Категор олдсонгүй'}, status: 404 unless category
     if category.update(is_deleted: true)
       render json: {message: "Category is deleted", category: category}
     else
@@ -74,7 +78,7 @@ class Api::V1::CategoriesController < ApplicationController
     end
   end
 
- # POST /users/:user_id/getCategoryAmountByDate
+  # POST /users/:user_id/getCategoryAmountByDate
   # Оруулсан он сараар нийт дүнг ангиллаар авах
   # :transaction_date param оруулна
   # Хоёр он сарын хоорондох гүйлгээн дүнг ангиллаар авах
@@ -82,10 +86,14 @@ class Api::V1::CategoriesController < ApplicationController
   # Өдрөөр нийт дүнг ангиллаар авах
   # :number_of_days оруулах
   def getCategoryAmountByParam
+    transactions = Transaction
+      .getTransactions(category_analyse_params, 4)
+    category_income, category_expense = Transaction
+      .partition_by_is_income(transactions)
     income = Transaction
-      .getTransactions(params, true, 2, 4)
+      .group_by_category_and_map(category_income)
     expense = Transaction
-      .getTransactions(params, false, 2, 4)
+      .group_by_category_and_map(category_expense)
     render json: {
       income: income,
       expense: expense
@@ -95,6 +103,9 @@ class Api::V1::CategoriesController < ApplicationController
   private
 
   def category_params       
-    params.require(:category).permit(:category_name, :is_income, :is_default, :number_of_days, :date_from, :date_to)
+    params.require(:category).permit(:category_name, :is_income)
   end
+  def category_analyse_params
+    params.permit(:date_from, :date_to, :number_of_days, :transaction_date, :user_id, :is_income)
+  end  
 end
