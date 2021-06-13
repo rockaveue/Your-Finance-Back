@@ -54,4 +54,5 @@ class Transaction < ApplicationRecord
     
     return query
   end
+  
 end
