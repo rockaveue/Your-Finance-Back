@@ -1,6 +1,6 @@
 class Api::V1::UsersController < ApplicationController
 
-  before_action :user_authorization
+  # before_action :user_authorization
 
   # GET /users/:id
   # Хэрэглэгчийн сонгох
@@ -23,9 +23,21 @@ class Api::V1::UsersController < ApplicationController
     end
   end
 
-  # POST /users/:id/soft_delete
+  # PATCH /users/:id
+  def update_password
+    @user = User.find(params[:id])
+    if @user.update_with_password(password_params)
+      # Sign in the user by passing validation in case their password changed
+      bypass_sign_in(@user)
+      render json: {message:"Password has changed."}
+    else
+      render json: {message: @user.errors}, status: 422
+    end
+  end
+
+  # DELETE /users/:id
   # Хэрэглэгч устгах
-  def soft_delete
+  def destroy
     user = User.find(params[:id])
     if user.update(is_deleted: true)
         render json: {message: 'User is deleted', data: user}
@@ -35,6 +47,10 @@ class Api::V1::UsersController < ApplicationController
   end
 
   private
+  def password_params
+      params.permit(:current_password, :password, :password_confirmation)
+  end
+
   def user_params
       params.require(:user).permit(:email, :password, :balance, :last_name, :first_name)
   end
