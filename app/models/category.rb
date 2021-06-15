@@ -9,7 +9,7 @@ class Category < ApplicationRecord
 
   def self.getUserCategories(params)
     query = joins(:user_categories)
-      .where('user_categories.user_id = ?', params[:user_id])
+      .where('user_categories.user_id = ?', current_api_v1_user.id)
       .where(is_deleted: false)
 
     if params[:is_income].in? [true, false]

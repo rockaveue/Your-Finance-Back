@@ -1,6 +1,6 @@
 class Api::V1::CategoriesController < ApplicationController
 
-  before_action :authorization, except: :defaultAllCategory
+  before_action :authorization(params[:id]), except: :defaultAllCategory
   # GET users/:user_id/transactions/:transactions_id/categories
   # Гүйлгээний категор авах
   def transactionCategory
@@ -43,7 +43,7 @@ class Api::V1::CategoriesController < ApplicationController
       if category.save
         userCategory = UserCategory.new(
           :category_id => category.id,
-          :user_id => params[:user_id]
+          :user_id => current_api_v1_user.id
         )
         if userCategory.save
           render json: category  

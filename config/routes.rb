@@ -16,7 +16,7 @@ Rails.application.routes.draw do
         }
       # resources :sessions, only: [:create, :destroy]
       # resources :registrations, only: [:create, :destroy]
-      resources :users, except: :index do
+      resource :users, except: :index do
         resources :transactions do
           collection do
             post :getTransactionsByParam

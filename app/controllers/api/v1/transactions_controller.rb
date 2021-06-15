@@ -1,13 +1,13 @@
 
 class Api::V1::TransactionsController < ApplicationController
 
-  before_action :authorization
+  before_action :authorization(params[:id])
     
   # GET /users/:user_id/transactions
   # Хэрэглэгчийн бүх гүйлгээ авах
   def index
     # Pagy::VARS[:items]  = 2
-    user = User.find_by_id(params[:user_id])
+    user = User.find_by_id(current_api_v1_user.id)
     transactions = Transaction
       .getTransactions(transactions_analyse_params, 5)
     render json: transactions
@@ -16,7 +16,7 @@ class Api::V1::TransactionsController < ApplicationController
   # GET /users/:user_id/transaction/:id
   # Хэрэглэгчийн гүйлгээ сонгох
   def show
-    user = User.find(params[:user_id])
+    user = User.find(current_api_v1_user.id)
     transaction = Transaction.find(params[:id])
     if user.id == transaction.user_id
       render json: transaction
@@ -28,9 +28,9 @@ class Api::V1::TransactionsController < ApplicationController
   # POST /users/:user_id/transaction
   # Гүйлгээ нэмэх
   def create
-    user = User.find(params[:user_id])
+    user = User.find(current_api_v1_user.id)
     transaction = Transaction.new(transaction_params)
-    transaction.user_id = params[:user_id]
+    transaction.user_id = current_api_v1_user.id
     user_balance = user.balance
     ActiveRecord::Base.transaction do
       if transaction.save
@@ -54,13 +54,13 @@ class Api::V1::TransactionsController < ApplicationController
   # PUT /users/:user_id/transaction/:id
   # Хэрэглэгчийн гүйлгээ өөрчлөх
   def update
-    user = User.find(params[:user_id])
+    user = User.find(current_api_v1_user.id)
     transaction = Transaction.find(params[:id])
     ActiveRecord::Base.transaction do
       last_amount = transaction.amount
       last_type = transaction.is_income
       if transaction.update(transaction_params)
-        user = User.find(params[:user_id])
+        user = User.find(current_api_v1_user.id)
         # хэрэглэгчийн баланс
         user_balance = user.balance
         # хуучин төрөл болон дүн
@@ -92,7 +92,7 @@ class Api::V1::TransactionsController < ApplicationController
   # DELETE /users/:user_id/transaction/:id
   # Хэрэглэгчийн гүйлгээ устгах
   def destroy
-    user = User.find(params[:user_id])
+    user = User.find(current_api_v1_user.id)
     transaction = Transaction.find(params[:id])
     ActiveRecord::Base.transaction do
       if transaction.is_income == true
