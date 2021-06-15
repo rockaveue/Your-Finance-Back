@@ -95,13 +95,12 @@ Rails.application.configure do
   config.action_mailer.perform_deliveries = true
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
-    :port           => ENV['MAILGUN_SMTP_PORT'],
-    :address        => ENV['MAILGUN_SMTP_SERVER'],
-    :user_name      => ENV['MAILGUN_SMTP_LOGIN'],
-    :password       => ENV['MAILGUN_SMTP_PASSWORD'],
-    domain: "your-finance-back.herokuapp.com/",
+    port: 587,
+    address: ENV['SMTP_SERVER_NAME'],
+    user_name: ENV['SMTP_USERNAME'],
+    password: ENV['SMTP_PASSWORD'],
     authentication: :plain,
-    # enable_starttls_auto: true
+    enable_starttls_auto: true
   }
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
