@@ -11,13 +11,13 @@ default: &default
   timeout: 5000
   # username: root
   # password: root
-  username: b1aa6fc15f928f
-  password: bbfd0266
+  username: <%= ENV['CLEARDB_USERNAME'] %>
+  password: <%= ENV['CLEARDB_PASSWORD'] %>
 
 development:
   <<: *default
   database: development
-  database: heroku_034e960d5b20c88
+  database: <%= ENV['CLEARDB_DATABASE_NAME'] %>
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
@@ -29,3 +29,4 @@ test:
 production:
   <<: *default
   database: production
+  # database: <%= ENV['CLEARDB_DATABASE_NAME'] %>
