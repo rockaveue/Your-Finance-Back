@@ -97,8 +97,8 @@ Rails.application.configure do
   config.action_mailer.smtp_settings = {
     port: 587,
     address: ENV['SMTP_SERVER_NAME'],
-    user_name: ENV['SMTP_USERNAME'],
-    password: ENV['SMTP_PASSWORD'],
+    user_name: ENV['SENDGRID_USERNAME'],
+    password: ENV['SENDGRID_PASSWORD'],
     domain: ENV['BACKEND_URL'],
     authentication: :plain,
     enable_starttls_auto: true
