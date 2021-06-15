@@ -1,15 +1,14 @@
 
 class Api::V1::TransactionsController < ApplicationController
 
-  before_action :authorization(params[:id])
+  before_action :transaction_authorization, only: [:show, :update, :destroy]
     
   # GET /users/:user_id/transactions
   # Хэрэглэгчийн бүх гүйлгээ авах
   def index
     # Pagy::VARS[:items]  = 2
-    user = User.find_by_id(current_api_v1_user.id)
     transactions = Transaction
-      .getTransactions(transactions_analyse_params, 5)
+      .getTransactions(transactions_analyse_params, 5, current_api_v1_user.id)
     render json: transactions
   end
 
@@ -113,7 +112,7 @@ class Api::V1::TransactionsController < ApplicationController
   # Хоёр он сарын хоорондох гүйлгээн мэдээлэл
   def getTransactionsByParam
     transactions = Transaction
-      .getTransactions(transactions_analyse_params, 3)
+      .getTransactions(transactions_analyse_params, 3, current_api_v1_user.id)
     income, expense = Transaction
       .partition_by_is_income(transactions)
     grouped_income = Transaction
@@ -135,7 +134,7 @@ class Api::V1::TransactionsController < ApplicationController
   # Оруулсан он сар дахь гүйлгээний мэдээлэл
   def getTransactionsByDate
     transactions = Transaction
-      .getTransactions(transactions_analyse_params, 5)
+      .getTransactions(transactions_analyse_params, 5, current_api_v1_user.id)
     render json: transactions
   end
 

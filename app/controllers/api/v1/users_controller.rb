@@ -1,6 +1,5 @@
 class Api::V1::UsersController < ApplicationController
 
-  # before_action :user_authorization
 
   # GET /users/:id
   # Хэрэглэгчийн сонгох

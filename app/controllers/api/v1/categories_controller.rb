@@ -1,6 +1,6 @@
 class Api::V1::CategoriesController < ApplicationController
 
-  before_action :authorization(params[:id]), except: :defaultAllCategory
+  before_action :category_authorization, only: [:update, :destroy]
   # GET users/:user_id/transactions/:transactions_id/categories
   # Гүйлгээний категор авах
   def transactionCategory
@@ -26,7 +26,7 @@ class Api::V1::CategoriesController < ApplicationController
   # Хэрэглэгчийн категор авах, төрөл тусгавал төрлөөр авах
   def getCategory
     categories = Category
-      .getUserCategories(category_analyse_params)
+      .getUserCategories(category_analyse_params, current_api_v1_user.id)
     default_category = Category
       .is_default_and_not_deleted
     income, expense = Transaction
@@ -87,7 +87,7 @@ class Api::V1::CategoriesController < ApplicationController
   # :number_of_days оруулах
   def getCategoryAmountByParam
     transactions = Transaction
-      .getTransactions(category_analyse_params, 4)
+      .getTransactions(category_analyse_params, 4, current_api_v1_user.id)
     category_income, category_expense = Transaction
       .partition_by_is_income(transactions)
     income = Transaction
