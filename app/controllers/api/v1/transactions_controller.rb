@@ -1,7 +1,7 @@
 
 class Api::V1::TransactionsController < ApplicationController
 
-  # before_action :authorization
+  before_action :authorization
     
   # GET /users/:user_id/transactions
   # Хэрэглэгчийн бүх гүйлгээ авах

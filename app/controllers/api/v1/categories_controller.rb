@@ -1,6 +1,6 @@
 class Api::V1::CategoriesController < ApplicationController
 
-  # before_action :authorization, except: :defaultAllCategory
+  before_action :authorization, except: :defaultAllCategory
   # GET users/:user_id/transactions/:transactions_id/categories
   # Гүйлгээний категор авах
   def transactionCategory
