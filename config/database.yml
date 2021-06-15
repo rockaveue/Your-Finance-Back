@@ -28,4 +28,5 @@ test:
 
 production:
   <<: *default
-  database: production
+  # database: production
+  database: <%= ENV['CLEARDB_DATABASE_NAME'] %>
