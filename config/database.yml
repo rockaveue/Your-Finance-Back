@@ -16,7 +16,7 @@ default: &default
 
 development:
   <<: *default
-  # database: development
+  database: development
   database: <%= ENV['CLEARDB_DATABASE_NAME'] %>
 
 # Warning: The database defined as "test" will be erased and
