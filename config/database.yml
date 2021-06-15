@@ -13,11 +13,11 @@ default: &default
   # password: root
   username: <%= ENV['CLEARDB_USERNAME'] %>
   password: <%= ENV['CLEARDB_PASSWORD'] %>
+  database: <%= ENV['CLEARDB_DATABASE_NAME'] %>
 
 development:
   <<: *default
   database: development
-  # database: <%= ENV['CLEARDB_DATABASE_NAME'] %>
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
