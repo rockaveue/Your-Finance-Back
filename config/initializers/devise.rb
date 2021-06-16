@@ -18,8 +18,8 @@ Devise.setup do |config|
   
   # --------------------------------------------
   config.jwt do |jwt|
-    # jwt.secret = ENV['DEVISE_JWT_SECRET_KEY']
-    jwt.secret = "012345678901234567890123456789"
+    jwt.secret = ENV['SECRET_KEY_BASE']
+    # jwt.secret = "012345678901234567890123456789"
     jwt.request_formats = { user: [:json] }
     jwt.dispatch_requests = [
       ['POST', %r{^/login$}]
@@ -38,7 +38,7 @@ Devise.setup do |config|
   # Configure the e-mail address which will be shown in Devise::Mailer,
   # note that it will be overwritten if you use your own mailer class
   # with default "from" parameter.
-  config.mailer_sender = ENV["EMAIL"]
+  config.mailer_sender = ENV["GMAIL_SMTP_USER"]
 
   # Configure the class responsible to send e-mails.
   # config.mailer = 'Devise::Mailer'
