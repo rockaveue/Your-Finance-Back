@@ -15,10 +15,11 @@ class Transaction < ApplicationRecord
     errors.add(:transaction_date, 'must be a valid datetime') if ((transaction_date.is_a?(Date) rescue ArgumentError) == ArgumentError)
   end
 
-  def self.getTransactions(param, selected)
+  def self.getTransactions(param, selected, user_id)
     query = joins(:category)
-      .where(:user_id => param[:user_id])
+      .where(:user_id => user_id)
       .where(is_deleted: false)
+      .order(:transaction_date)
 
     if param[:date_from].present?
       query = query.where('DATE(transaction_date) BETWEEN ? AND ?', param[:date_from], param[:date_to])
