@@ -50,16 +50,19 @@ class ApplicationController < ActionController::API
   end
 
   # Simple authorization
-  # params[:user_id] байгаа газар ашиглана
-  def authorization
-    if Integer(params[:user_id]) != current_api_v1_user.id
+  def transaction_authorization
+    transaction = Transaction.find(params[:id])
+    if transaction.user_id != current_api_v1_user.id
       render json: {message: 'unauthorized'}, status: 401
     end
   end
 
-  def user_authorization
-    if Integer(params[:id]) != current_api_v1_user.id
-      render json: {message: 'unauthorized'}, status: 401
+  def category_authorization
+    category = Category.getUserCategoriesByCategory(params[:id])
+    user_ids = category
+      .map {|v| v["user_id"]}
+    if !current_api_v1_user.id.in?(user_ids)
+      render json: {message: "unauthorized"}, status: 401
     end
   end
 end

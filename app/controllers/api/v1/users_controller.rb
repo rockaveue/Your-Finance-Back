@@ -1,11 +1,10 @@
 class Api::V1::UsersController < ApplicationController
 
-  before_action :user_authorization
 
   # GET /users/:id
   # Хэрэглэгчийн сонгох
   def show
-    user = User.find(params[:id])
+    user = User.find(current_api_v1_user.id)
     # cache middleware
     if stale?(last_modified: user.updated_at)
         render json: user
@@ -15,7 +14,7 @@ class Api::V1::UsersController < ApplicationController
   # PUT /users/:id
   # Хэрэглэгч өөрчлөх
   def update
-    user = User.find(params[:id])
+    user = User.find(current_api_v1_user.id)
     if user.update(user_params)
         render json: user
     else
@@ -25,7 +24,7 @@ class Api::V1::UsersController < ApplicationController
 
   # PATCH /users/:id
   def update_password
-    @user = User.find(params[:id])
+    @user = User.find(current_api_v1_user.id)
     if @user.update_with_password(password_params)
       # Sign in the user by passing validation in case their password changed
       bypass_sign_in(@user)
@@ -38,7 +37,7 @@ class Api::V1::UsersController < ApplicationController
   # DELETE /users/:id
   # Хэрэглэгч устгах
   def destroy
-    user = User.find(params[:id])
+    user = User.find(current_api_v1_user.id)
     if user.update(is_deleted: true)
         render json: {message: 'User is deleted', data: user}
     else

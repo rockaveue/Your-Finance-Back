@@ -34,7 +34,7 @@ Rails.application.configure do
   config.active_storage.service = :local
 
   
-  config.action_mailer.default_url_options = { host: 'your-finance-back.herokuapp.com'}
+  config.action_mailer.default_url_options = { host: '127.0.0.1', port: 3000}
   # Don't care if the mailer can't send.
   
   config.action_mailer.raise_delivery_errors = true
@@ -62,7 +62,7 @@ Rails.application.configure do
   config.active_support.disallowed_deprecation_warnings = []
 
   # Raise an error on page load if there are pending migrations.
-  config.active_record.migration_error = :page_load
+  config.active_record.migration_error = false#:page_load
 
   # Highlight code that triggered database queries in logs.
   config.active_record.verbose_query_logs = true
