@@ -1,5 +1,5 @@
 class UserMailer < ApplicationMailer
-  default from: ENV["EMAIL"]
+  default from: ENV["GMAIL_SMTP_USER"]
   layout 'mailer'
 
   def welcome_email(user)
