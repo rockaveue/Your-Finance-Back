@@ -1,9 +1,9 @@
 # User seeder
-10.times do
+5.times do
     User.create({
         email: Faker::Internet.email,
-        password: Devise::Encryptor.digest(User, '123'),
-        encrypted_password: Devise::Encryptor.digest(User, '123'),
+        password: Devise::Encryptor.digest(User, '123456789a'),
+        encrypted_password: Devise::Encryptor.digest(User, '123456789a'),
         first_name: Faker::Name.first_name,
         last_name: Faker::Name.last_name,
         balance: Faker::Number.number(digits: 6)
