@@ -49,6 +49,22 @@ class Transaction < ApplicationRecord
     return query
   end
 
+  def self.changeTransactionByDeletedCategory(id, user_id)
+    transactions = Transaction.where(:user_id => user_id)
+    .where(:category_id => id)
+    if transactions.present?
+      transactions.each do |transaction|
+        if transaction.is_income
+          transaction.category_id = ENV['CATEGORY_OTHER_INCOME']
+          transaction.save
+        else
+          transaction.category_id = ENV['CATEGORY_OTHER_EXPENSE']
+          transaction.save
+        end
+      end
+    end
+  end
+
   # Өдрөөр ангилан өдөр болон нийт дүнг бодох
   def self.group_by_date(transaction)
     transaction = transaction

@@ -72,6 +72,7 @@ class Api::V1::CategoriesController < ApplicationController
   def destroy
     category = Category.find(params[:id])
     if category.update(is_deleted: true)
+      Transaction.changeTransactionByDeletedCategory(params[:id], current_api_v1_user)
       render json: {message: "Category is deleted", category: category}
     else
       render json: {message: category.errors}, status: 422
