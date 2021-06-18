@@ -77,11 +77,19 @@ class Api::V1::CategoriesController < ApplicationController
   # Категор устгах
   def destroy
     category = Category.find(params[:id])
-    if category.update(is_deleted: true)
-      Transaction.changeTransactionByDeletedCategory(params[:id], current_api_v1_user)
-      render json: {message: "Category is deleted", category: category}
-    else
-      render json: {message: category.errors}, status: 422
+    transactions = Transaction.getTransactions(category_analyse_params, nil, current_api_v1_user)
+    ActiveRecord::Base.transaction do
+      if category.update(is_deleted: true)
+        if transactions.present?
+          transactions.each do |transaction|
+            category_id = transaction.is_income ? ENV['CATEGORY_OTHER_INCOME'].to_i : ENV['CATEGORY_OTHER_EXPENSE'].to_i
+            transaction.update(category_id: category_id)
+          end
+        end
+        render json: {message: "Category is deleted", category: category}
+      else
+        render json: {message: category.errors}, status: 422
+      end
     end
   end
 
@@ -113,6 +121,6 @@ class Api::V1::CategoriesController < ApplicationController
     params.require(:category).permit(:category_name, :is_income)
   end
   def category_analyse_params
-    params.permit(:date_from, :date_to, :number_of_days, :transaction_date, :user_id, :is_income)
+    params.permit(:date_from, :date_to, :number_of_days, :transaction_date, :user_id, :is_income, :id)
   end  
 end
