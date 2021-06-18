@@ -1,37 +1,5 @@
 require 'rails_helper'
 
-RSpec.describe User, type: :model do
-  it 'is valid with valid attributes' do
-    user = build(:user)
-    expect(user).to be_valid
-  end
-  it 'is not valid without attributes' do
-    user = User.new
-    expect(user).to_not be_valid
-  end
-  it 'is not valid without email' do
-    user = build(:user)
-    user.email = nil
-    expect(user).to_not be_valid
-  end
-  it 'is not valid with wrong email' do
-    user = build(:user)
-    user.email = 'test'
-    expect(user).to_not be_valid
-  end
-  it 'is not valid without first_name' do
-    user = build(:user)
-    user.first_name = nil
-    expect(user).to_not be_valid
-  end
-  it 'is not valid without last_name' do
-    user = build(:user)
-    user.last_name = nil
-    expect(user).to_not be_valid
-  end
-end
-
-
 RSpec.describe "Api::V1::Users::Registrations", type: :request do
   describe "POST #create" do
     let (:user_params) do
