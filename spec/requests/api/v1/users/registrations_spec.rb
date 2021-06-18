@@ -10,23 +10,23 @@ RSpec.describe User, type: :model do
     expect(user).to_not be_valid
   end
   it 'is not valid without email' do
-    user = User.new
-    user.first_name = 'Dulguun'
-    user.last_name = 'Tuguldur'
-    user.password = '1234567'
+    user = build(:user)
+    user.email = nil
     expect(user).to_not be_valid
   end
   it 'is not valid with wrong email' do
-    user = User.new
+    user = build(:user)
     user.email = 'test'
-    user.first_name = 'Dulguun'
-    user.last_name = 'Tuguldur'
-    user.password = '1234567'
     expect(user).to_not be_valid
   end
-  it 'is not valid without some attribute' do
-    user = User.new
-    user.email = 'test@gmail.com'
+  it 'is not valid without first_name' do
+    user = build(:user)
+    user.first_name = nil
+    expect(user).to_not be_valid
+  end
+  it 'is not valid without last_name' do
+    user = build(:user)
+    user.last_name = nil
     expect(user).to_not be_valid
   end
 end
