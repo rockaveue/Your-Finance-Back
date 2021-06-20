@@ -1,27 +1,59 @@
 require 'rails_helper'
 
-# RSpec.describe "Api::V1::Categories", type: :request do
-#   describe "GET /index" do
-#     pending "add some examples (or delete) #{__FILE__}"
-#   end
-# end
-
-def authenticated_header(user, password)
-  response = AuthenticateUser.call(user, password)
-  { "Authorization" => response.result}
+RSpec.describe Api::V1::CategoriesController, type: :controller do
+  @controller = Api::V1::CategoriesController.new
+  before :each do
+    @user = create(:user)
+    @token = authenticated_header(@user)
+    @category_params = attributes_for(:category)
+    @expected = {
+      category_name: "test name"
+    }
+    request.headers['Authorization'] = @token
+  end
+  describe "POST #create" do
+    it 'creates new category with valid values' do
+      post :create, params: {category: @category_params}
+      expect(response).to have_http_status(:success)
+      expect(JSON.parse(response.body)['category_name']).to eq("test name")
+    end
+    it 'does not create category with long name' do
+      @category_params[:category_name] = "1234567891234567891234567891234"
+      @category_params[:is_income] = "123"
+      post :create, params: {category: @category_params}
+      expect(response).to have_http_status(:unprocessable_entity)      
+    end
+    it 'does not create category without empty is_income' do
+      @category_params[:is_income] = nil
+      post :create, params: {category: @category_params}
+      expect(response).to have_http_status(:unprocessable_entity)      
+    end
+  end
+  describe "PUT #update" do
+    
+  end
+  describe "DELETE #destroy" do
+    
+  end
+  describe "GET #getCategoryAmountByParam" do
+    
+  end
+  describe "GET #default_category" do
+    it 'gets default categories' do
+      # get '/default_category', params: {controller: 'api/v1'}
+      # expect(get: '/default_category').to route_to(controller: '/api/v1', action: 'defaultAllCategory')
+    end
+  end
+  describe "GET #transactionCategory" do
+    
+  end
+  describe "POST #getCategory" do
+    
+  end
 end
 
-def auth_spec_request(user)
-  request.headers.merge!(user.create_new_auth_token) if sign_in(user)
-end
 
-# describe 'Categories API', type: :request do
-#   it 'returns default categories' do
-#     # request.headers.merge!(authenticated_header("ra.by.duk@gmail.com", "123456789a"))
-#     user = User.find(1)
-#     auth_spec_request(user)
-#     get '/api/v1/defaultCategory'
-#     puts response.body
-#     expect(response).to have_http_status(:success)
-#   end
-# end
+def authenticated_header(user)
+  token = Warden::JWTAuth::UserEncoder.new.call(user, :api_v1_user, nil).first
+  return "Bearer #{token}"
+end
