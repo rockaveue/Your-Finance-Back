@@ -4,7 +4,6 @@ FactoryBot.define do
     first_name            {"Dulguun"}
     last_name             {"Tuguldur"}
     password              {"123456789a"}
-    id                    {1}
   end
   factory :existing_user do
     email                 {"dwight@christiansen-rutherford.io"}

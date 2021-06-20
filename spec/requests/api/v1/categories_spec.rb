@@ -30,7 +30,14 @@ RSpec.describe Api::V1::CategoriesController, type: :controller do
     end
   end
   describe "PUT #update" do
-    
+    it 'updates category' do
+      # Шинээр үүсгэсэн категороо өөрчлөхийг шалгах
+      post :create, params: {category: @category_params}
+      id = JSON.parse(response.body)['id']
+      @category_params[:category_name] = 'edited name'
+      put :update, params: {category: @category_params, id: id}
+      expect(response).to have_http_status(:success)
+    end
   end
   describe "DELETE #destroy" do
     
@@ -40,8 +47,8 @@ RSpec.describe Api::V1::CategoriesController, type: :controller do
   end
   describe "GET #default_category" do
     it 'gets default categories' do
-      # get '/default_category', params: {controller: 'api/v1'}
-      # expect(get: '/default_category').to route_to(controller: '/api/v1', action: 'defaultAllCategory')
+      get :defaultAllCategory, params: {use_route: 'api/v1'}
+      expect(response).to have_http_status(:success)
     end
   end
   describe "GET #transactionCategory" do
