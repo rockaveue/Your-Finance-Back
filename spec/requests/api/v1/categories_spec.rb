@@ -6,9 +6,7 @@ RSpec.describe Api::V1::CategoriesController, type: :controller do
     @user = create(:user)
     @token = authenticated_header(@user)
     @category_params = attributes_for(:category)
-    @expected = {
-      category_name: "test name"
-    }
+    @transaction_params = attributes_for(:transaction)
     request.headers['Authorization'] = @token
   end
   describe "POST #create" do
@@ -33,17 +31,58 @@ RSpec.describe Api::V1::CategoriesController, type: :controller do
     it 'updates category' do
       # Шинээр үүсгэсэн категороо өөрчлөхийг шалгах
       post :create, params: {category: @category_params}
-      id = JSON.parse(response.body)['id']
+      category_id = JSON.parse(response.body)['id']
       @category_params[:category_name] = 'edited name'
-      put :update, params: {category: @category_params, id: id}
+      put :update, params: {category: @category_params, id: category_id}
       expect(response).to have_http_status(:success)
+      expect(JSON.parse(response.body)['category_name']).to eq('edited name')
+    end
+    it 'does not update without valid params' do
+      post :create, params: {category: @category_params}
+      category_id = JSON.parse(response.body)['id']
+      @category_params[:category_name] = '1234567891234567891234567891234'
+      put :update, params: {category: @category_params, id: category_id}
+      expect(response).to have_http_status(:unprocessable_entity)
     end
   end
   describe "DELETE #destroy" do
-    
+    it 'deletes category' do
+      post :create, params: {category: @category_params}
+      category_id = JSON.parse(response.body)['id']
+      delete :destroy, params: {id: category_id}
+      expect(response).to have_http_status(:success)
+    end
+    it 'does not deletes other categories' do
+      delete :destroy, params: {id: 1}
+      expect(response).to have_http_status(:unauthorized)
+    end
   end
   describe "GET #getCategoryAmountByParam" do
-    
+    it 'gets category by date from and to' do
+      analyse_params = {date_from: "2021-03-01", date_to: "2020-04-01"}
+      post :getCategoryAmountByParam, params: analyse_params
+      expect(response).to have_http_status(:success)
+    end
+    it 'gets category by transaction date' do
+      analyse_params = {transaction_date: 123}
+      post :getCategoryAmountByParam, params: analyse_params
+      expect(response).to have_http_status(:success)
+    end
+    it 'gets category by number of days' do
+      analyse_params = {number_of_days: 90}
+      post :getCategoryAmountByParam, params: analyse_params
+      expect(response).to have_http_status(:success)
+    end
+    it 'gets categories by number of days param in string' do
+      analyse_params = {number_of_days: "123"}
+      post :getCategoryAmountByParam, params: analyse_params
+      expect(response).to have_http_status(:success)
+    end
+    it 'does not get categories without valid number of days param' do
+      analyse_params = {number_of_days: "testtest"}
+      post :getCategoryAmountByParam, params: analyse_params
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
   end
   describe "GET #default_category" do
     it 'gets default categories' do
@@ -51,11 +90,15 @@ RSpec.describe Api::V1::CategoriesController, type: :controller do
       expect(response).to have_http_status(:success)
     end
   end
-  describe "GET #transactionCategory" do
-    
-  end
   describe "POST #getCategory" do
-    
+    it 'gets user categories' do
+      post :getCategory
+      expect(response).to have_http_status(:success)
+    end
+    it 'gets user categories' do
+      post :getCategory
+      expect(response).to have_http_status(:success)
+    end
   end
 end
 

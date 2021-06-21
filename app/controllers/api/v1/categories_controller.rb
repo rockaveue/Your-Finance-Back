@@ -1,6 +1,7 @@
 class Api::V1::CategoriesController < ApplicationController
 
   before_action :category_authorization, only: [:update, :destroy]
+  before_action :validate_analyze_params, only: :getCategoryAmountByParam
   # GET users/:user_id/transactions/:transactions_id/categories
   # Гүйлгээний категор авах
   def transactionCategory
@@ -106,6 +107,6 @@ class Api::V1::CategoriesController < ApplicationController
     params.require(:category).permit(:category_name, :is_income)
   end
   def category_analyse_params
-    params.permit(:date_from, :date_to, :number_of_days, :transaction_date, :user_id, :is_income)
+    params.permit(:date_from, :date_to, :number_of_days, :transaction_date, :is_income)
   end  
 end
