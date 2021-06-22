@@ -27,6 +27,8 @@ class Transaction < ApplicationRecord
       query = query.where('DATE(transaction_date) BETWEEN ? AND ?', param[:number_of_days].days.ago, Time.now)
     elsif param[:transaction_date].present?
       query = query.where(:transaction_date => param[:transaction_date])
+    elsif param[:id].present?
+      query = query.where(:category_id => param[:id])
     end
 
     if selected == 1
@@ -48,6 +50,7 @@ class Transaction < ApplicationRecord
     
     return query
   end
+
 
   # Өдрөөр ангилан өдөр болон нийт дүнг бодох
   def self.group_by_date(transaction)

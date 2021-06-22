@@ -41,19 +41,25 @@ class Api::V1::CategoriesController < ApplicationController
   def create
     ActiveRecord::Base.transaction do
       category = Category.new(category_params)
-      if category.save
-        userCategory = UserCategory.new(
-          :category_id => category.id,
-          :user_id => current_api_v1_user.id
-        )
-        if userCategory.save
-          render json: category  
-        else            
-          render json: {message: userCategory.errors}, status: 422
-        end
+      user_categories = Category.getUserCategories(category_params, current_api_v1_user.id)
+      user_categories_name = user_categories.map {|v| v.category_name}
+      if !category_params[:category_name].in? user_categories_name
+        if category.save
+          userCategory = UserCategory.new(
+            :category_id => category.id,
+            :user_id => current_api_v1_user.id
+          )
+          if userCategory.save
+            render json: category  
+          else            
+            render json: {message: userCategory.errors}, status: 422
+          end
+        else
+          render json: {message: category.errors}, status: 422
+        end 
       else
-        render json: {message: category.errors}, status: 422
-      end 
+        render json: {message: "Duplicate category name"}, status: 422
+      end
     end
   end
 
@@ -72,10 +78,19 @@ class Api::V1::CategoriesController < ApplicationController
   # Категор устгах
   def destroy
     category = Category.find(params[:id])
-    if category.update(is_deleted: true)
-      render json: {message: "Category is deleted", category: category}
-    else
-      render json: {message: category.errors}, status: 422
+    transactions = Transaction.getTransactions(category_analyse_params, nil, current_api_v1_user)
+    ActiveRecord::Base.transaction do
+      if category.update(is_deleted: true)
+        if transactions.present?
+          transactions.each do |transaction|
+            category_id = transaction.is_income ? ENV['CATEGORY_OTHER_INCOME'].to_i : ENV['CATEGORY_OTHER_EXPENSE'].to_i
+            transaction.update(category_id: category_id)
+          end
+        end
+        render json: {message: "Category is deleted", category: category}
+      else
+        render json: {message: category.errors}, status: 422
+      end
     end
   end
 
