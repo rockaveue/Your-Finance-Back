@@ -33,10 +33,10 @@ class Api::V1::TransactionsController < ApplicationController
     user_balance = user.balance
     ActiveRecord::Base.transaction do
       if transaction.save
-        if params[:is_income] == true
-          user_balance += params[:amount]
+        if transaction.is_income == true
+          user_balance += transaction.amount
         else
-          user_balance -= params[:amount]
+          user_balance -= transaction.amount
         end
         user.balance = user_balance
         if user.save
@@ -112,7 +112,7 @@ class Api::V1::TransactionsController < ApplicationController
   # Хоёр он сарын хоорондох гүйлгээн мэдээлэл
   def getTransactionsByParam
     transactions = Transaction
-      .getTransactions(transactions_analyse_params, 3, current_api_v1_user.id)
+      .getTransactions(transactions_analyse_params, 5, current_api_v1_user.id)
     income, expense = Transaction
       .partition_by_is_income(transactions)
     grouped_income = Transaction

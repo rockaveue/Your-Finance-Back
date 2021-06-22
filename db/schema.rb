@@ -10,12 +10,12 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_06_02_070016) do
+ActiveRecord::Schema.define(version: 2021_06_15_050645) do
 
   create_table "categories", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "category_name"
     t.boolean "is_income"
-    t.boolean "is_default"
+    t.boolean "is_default", default: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.boolean "is_deleted", default: false
@@ -58,7 +58,7 @@ ActiveRecord::Schema.define(version: 2021_06_02_070016) do
     t.string "password"
     t.string "first_name"
     t.string "last_name"
-    t.float "balance"
+    t.float "balance", default: 0.0
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.string "encrypted_password", default: "", null: false
@@ -74,6 +74,8 @@ ActiveRecord::Schema.define(version: 2021_06_02_070016) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "transactions", "categories"
+  add_foreign_key "transactions", "users"
   add_foreign_key "user_categories", "categories"
   add_foreign_key "user_categories", "users"
 end
