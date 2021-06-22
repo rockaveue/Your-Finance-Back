@@ -23,8 +23,8 @@
 # # # Transaction seeder
 # 10.times do
 #   Transaction.create!({
-#     category_id: Faker::Number.between(from:1, to: 10),
-#     user_id: Faker::Number.between(from:312, to: 320),
+#     category_id: Faker::Number.between(from:101, to: 110),
+#     user_id: Faker::Number.between(from:501, to: 505),
 #     is_income: Faker::Boolean.boolean,
 #     transaction_date: Faker::Date.between(from: 1.year.ago, to: Date.today),
 #     amount: Faker::Number.between(from: 0, to: 1000000, ),
