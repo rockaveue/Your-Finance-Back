@@ -101,10 +101,8 @@ RSpec.describe Api::V1::TransactionsController, type: :controller do
     end
   end
   describe "POST #getTransactionsByParam" do
-    it 'returns transaction' do
+    it 'returns transaction by params' do
       post :getTransactionsByParam
-      # puts JSON.parse(response.body)['income'][0]
-      # expect(JSON.parse(response.body)['income'][0]).to be_present, "expected to give records"
       expect(response).to have_http_status(:success)
     end
   end
