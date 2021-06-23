@@ -2,7 +2,6 @@
 class Api::V1::TransactionsController < ApplicationController
 
   before_action :transaction_authorization, only: [:show, :update, :destroy]
-    
   # GET /users/:user_id/transactions
   # Хэрэглэгчийн бүх гүйлгээ авах
   def index

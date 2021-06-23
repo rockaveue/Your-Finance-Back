@@ -7,7 +7,9 @@ RSpec.describe Api::V1::TransactionsController, type: :controller do
     @user = create(:user)
     @token = authenticated_header(@user)
     @category_params = attributes_for(:category)
+    @category = create(:category)
     @transaction_params = attributes_for(:transaction)
+    @transaction_params[:category_id] = @category.id
     request.headers['Authorization'] = @token
   end
   describe "GET #index" do
@@ -23,77 +25,45 @@ RSpec.describe Api::V1::TransactionsController, type: :controller do
   end
   describe "POST #create" do
     it 'creates new transaction with valid values' do
-      old_controller = @controller
-      @controller = Api::V1::CategoriesController.new
-      post :create, params: {category: @category_params}
-      puts response.body
-      category_id = JSON.parse(response.body)['id']
-      puts category_id
-      @controller = old_controller
-      user_id = @user.id
-      @transaction_params[:category_id] = category_id
-      @transaction_params[:user_id] = user_id
-      puts @transaction_params
       post :create, params: {transaction: @transaction_params}
+      expect((JSON.parse(response.body))['amount']).to eq(100)
       expect(response).to have_http_status(:success)
     end
     it 'does not create transaction with empty date' do
-      old_controller = @controller
-      @controller = Api::V1::CategoriesController.new
-      post :create, params: {category: @category_params}
-      category_id = JSON.parse(response.body)['id']
-      @controller = old_controller
-      @transaction_params[:category_id] = category_id
       @transaction_params[:transaction_date] = nil
       post :create, params: {transaction: @transaction_params}
       expect(response).to have_http_status(:unprocessable_entity) 
     end
     it 'does not create transaction with amount value of -1' do
-      old_controller = @controller
-      @controller = Api::V1::CategoriesController.new
-      post :create, params: {category: @category_params}
-      category_id = JSON.parse(response.body)['id']
-      @controller = old_controller
-      @transaction_params[:category_id] = category_id
       @transaction_params[:amount] = -1
       post :create, params: {transaction: @transaction_params}
       expect(response).to have_http_status(:unprocessable_entity) 
     end
     it 'does not create transaction with amount value of string' do
-      old_controller = @controller
-      @controller = Api::V1::CategoriesController.new
-      post :create, params: {category: @category_params}
-      category_id = JSON.parse(response.body)['id']
-      @controller = old_controller
-      @transaction_params[:category_id] = category_id
-      @transaction_params[:amount] = "123"
+      @transaction_params[:amount] = "qwert"
       post :create, params: {transaction: @transaction_params}
       expect(response).to have_http_status(:unprocessable_entity) 
     end
   end
   describe "PUT #update" do
     it 'updates transaction' do
-      old_controller = @controller
-      @controller = Api::V1::CategoriesController.new
-      post :create, params: {category: @category_params}
-      category_id = JSON.parse(response.body)['id']
-      @controller = old_controller
-      @transaction_params[:category_id] = category_id
       post :create, params: {transaction: @transaction_params}
       transaction_id = JSON.parse(response.body)['id']
       @transaction_params[:amount] = 5000
       put :update, params: {transaction: @transaction_params, id: transaction_id}
+      expect((JSON.parse(response.body))['amount']).to eq(5000)
       expect(response).to have_http_status(:success)
+    end
+    it 'can not update transaction with amount value with -1' do
+      post :create, params: {transaction: @transaction_params}
+      transaction_id = JSON.parse(response.body)['id']
+      @transaction_params[:amount] = -1
+      put :update, params: {transaction: @transaction_params, id: transaction_id}
+      expect(response).to have_http_status(:unprocessable_entity)
     end
   end
   describe "DELETE #destroy" do
     it 'deleting transaction' do
-      old_controller = @controller
-      @controller = Api::V1::CategoriesController.new
-      post :create, params: {category: @category_params}
-      category_id = JSON.parse(response.body)['id']
-      @controller = old_controller
-      @transaction_params[:category_id] = category_id
       post :create, params: {transaction: @transaction_params}
       transaction_id = JSON.parse(response.body)['id']
       delete :destroy, params: {id: transaction_id}
@@ -102,13 +72,16 @@ RSpec.describe Api::V1::TransactionsController, type: :controller do
   end
   describe "POST #getTransactionsByParam" do
     it 'returns transaction by params' do
+      post :create, params: {transaction: @transaction_params}
       post :getTransactionsByParam
       expect(response).to have_http_status(:success)
     end
   end
   describe "POST #getTransactionsByDate" do
     it 'returns transactions by date' do
+      post :create, params: {transaction: @transaction_params}
       post :getTransactionsByDate
+      puts response.body
       expect(response).to have_http_status(:success)
     end
   end
