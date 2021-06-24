@@ -9,6 +9,7 @@ class User < ApplicationRecord
   validates :first_name, presence: true, length: { maximum: 30, minimum: 2 }
   validates :last_name, presence: true, length: { maximum: 30, minimum: 2 }
   validates :encrypted_password, presence: true, length: { maximum: 256 }
+  validates :balance, length: {maximum: 12}
   # has_secure_password
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable

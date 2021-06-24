@@ -5,7 +5,7 @@ class Transaction < ApplicationRecord
   validates :category, presence: true
   validates :user, presence: true
   validates :is_income, inclusion: { in: [ true, false ] }
-  validates :amount, presence: true, numericality: true
+  validates :amount, presence: true, numericality: true, length: {maximum: 12}
   validates :transaction_date, presence: true
   validate :transaction_date_is_valid_datetime
   validates :note, length: { maximum: 255 }

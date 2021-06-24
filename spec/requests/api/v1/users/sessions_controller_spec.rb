@@ -6,16 +6,16 @@ RSpec.describe Api::V1::Users::SessionsController, type: :controller do
     @request.env['devise.mapping'] = Devise.mappings[:api_v1_user]
     @user_params = attributes_for(:user)
     @user = User.create!(@user_params)
-    @token = authenticated_header(@user)
+    @user2 = create(:user)
+    @token = authenticated_header(@user2)
   end
   let(:user_login_params) do {
     "email": @user_params[:email],
-    "password": @user_params[:password]
+    "password": '123456789a'
   } end
   describe "POST #create" do
     it 'logs in with valid credentials' do
       post :create, params: {api_v1_user: user_login_params}
-      puts response.headers
       expect(response).to have_http_status(:success)
       expect(JSON.parse(response.body)['message']).to eq("Logged in.")
     end
@@ -28,12 +28,15 @@ RSpec.describe Api::V1::Users::SessionsController, type: :controller do
   end
   describe "Delete #destroy" do
     it 'logs out logged in user' do
-      post :create, params: {api_v1_user: user_login_params}
       request.headers['Authorization'] = @token
-      puts @token
       delete :destroy
-      puts response.body
       expect(response).to have_http_status(:success)
+      expect(JSON.parse(response.body)['message']).to eq("Logged out successfully.")
+    end
+    it 'does not log out without token' do
+      delete :destroy
+      expect(response).to have_http_status(:unauthorized)
+      expect(JSON.parse(response.body)['message']).to eq("Errors occured while logging out.")
     end
   end
 end
