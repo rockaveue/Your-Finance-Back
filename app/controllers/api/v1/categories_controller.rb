@@ -27,7 +27,7 @@ class Api::V1::CategoriesController < ApplicationController
   # Хэрэглэгчийн категор авах, төрөл тусгавал төрлөөр авах
   def getCategory
     categories = Category
-      .getUserCategories(category_analyse_params, current_api_v1_user.id)
+      .getUserCategories(category_analyse_params, current_api_v1_user.id, nil)
     default_category = Category
       .is_default_and_not_deleted
     income, expense = Transaction
@@ -41,16 +41,15 @@ class Api::V1::CategoriesController < ApplicationController
   def create
     ActiveRecord::Base.transaction do
       category = Category.new(category_params)
-      user_categories = Category.getUserCategories(category_params, current_api_v1_user.id)
-      user_categories_name = user_categories.map {|v| v.category_name}
-      if !category_params[:category_name].in? user_categories_name
+      user_categories_name = Category.getUserCategories(category_params, current_api_v1_user.id, 1)
+      if !category.category_name.downcase.in? user_categories_name
         if category.save
           userCategory = UserCategory.new(
             :category_id => category.id,
             :user_id => current_api_v1_user.id
           )
           if userCategory.save
-            render json: category  
+            render json: category
           else            
             render json: {message: userCategory.errors}, status: 422
           end
@@ -67,10 +66,15 @@ class Api::V1::CategoriesController < ApplicationController
   # Категор өөрчлөх
   def update
     category = Category.find(params[:id])
-    if category.update(category_params)
-      render json: category
+    user_categories_name = Category.getUserCategories(category_params, current_api_v1_user.id, 1)
+    if !category_params[:category_name].downcase.in? user_categories_name
+      if category.update(category_params)
+        render json: category
+      else
+          render json: {message: category.errors}, status: 422
+        end
     else
-      render json: {message: category.errors}, status: 422
+      render json: {message: "Duplicate category name"}, status: 422
     end
   end
 

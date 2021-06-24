@@ -59,9 +59,7 @@ class ApplicationController < ActionController::API
 
   def category_authorization
     category = Category.getUserCategoriesByCategory(params[:id])
-    user_ids = category
-      .map {|v| v["user_id"]}
-    if !current_api_v1_user.id.in?(user_ids)
+    if !current_api_v1_user.id.in?(category)
       render json: {message: "unauthorized"}, status: 401
     end
   end
