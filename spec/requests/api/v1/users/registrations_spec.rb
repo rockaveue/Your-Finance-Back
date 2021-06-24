@@ -36,7 +36,3 @@ RSpec.describe Api::V1::Users::RegistrationsController, type: :controller do
     end
   end
 end
-
-def auth_spec_request(user)
-  request.headers.merge!(user.create_new_auth_token) if sign_in(user)
-end
