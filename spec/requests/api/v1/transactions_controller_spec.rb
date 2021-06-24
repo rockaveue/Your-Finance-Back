@@ -81,7 +81,6 @@ RSpec.describe Api::V1::TransactionsController, type: :controller do
     it 'returns transactions by date' do
       post :create, params: {transaction: @transaction_params}
       post :getTransactionsByDate
-      puts response.body
       expect(response).to have_http_status(:success)
     end
   end
