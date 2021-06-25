@@ -27,19 +27,43 @@ RSpec.describe Api::V1::UsersController, type: :controller do
     it 'should update the user' do
       @user_params[:first_name] = "dorj"
       put :update, params: {user: @user_params}
-      expect(JSON.parse(response.body)['email']).to eq(@user.email)
+      expect(JSON.parse(response.body)['first_name']).to eq('dorj')
       expect(response).to have_http_status(:success)
     end
     it 'should update the users first name with exactly 30 chars' do
       @user_params[:first_name] = "dorjasdjasdladjkdjakskssasdasd"
       put :update, params: {user: @user_params}
-      expect(JSON.parse(response.body)['email']).to eq(@user.email)
+      expect(JSON.parse(response.body)['email']).to eq(@user_params[:email])
       expect(response).to have_http_status(:success)
     end
     it 'shouldnt update the users first name with exceeded length' do
       @user_params[:first_name] = "dorjasdjasdladjkdjakskssasdasdsdss"
       put :update, params: {user: @user_params}
       expect(JSON.parse(response.body)['message']['first_name']).to eq(['is too long (maximum is 30 characters)'])
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+    it 'shouldnt update the user with invalid balance' do
+      @user_params[:balance] = 1.233
+      put :update, params: {user: @user_params}
+      expect(JSON.parse(response.body)['message']['balance']).to eq(["can't be more than 2 decimal places"])
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+    it 'should update the user with negative balance' do
+      @user_params[:balance] = -1.23
+      put :update, params: {user: @user_params}
+      expect(JSON.parse(response.body)['balance']).to eq(-1.23)
+      expect(response).to have_http_status(:success)
+    end
+    it 'should update the user with just under high balance' do
+      @user_params[:balance] = 999999999999
+      put :update, params: {user: @user_params}
+      expect(JSON.parse(response.body)['balance']).to eq(999999999999.0)
+      expect(response).to have_http_status(:success)
+    end
+    it 'shouldnt update the user with high balance' do
+      @user_params[:balance] = 1000000000000
+      put :update, params: {user: @user_params}
+      expect(JSON.parse(response.body)['message']['balance']).to eq(["must be less than 999999999999.99"])
       expect(response).to have_http_status(:unprocessable_entity)
     end
   end

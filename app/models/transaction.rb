@@ -5,11 +5,19 @@ class Transaction < ApplicationRecord
   validates :category, presence: true
   validates :user, presence: true
   validates :is_income, inclusion: { in: [ true, false ] }
-  validates :amount, presence: true, numericality: { greater_than_or_equal_to: 0}
+  validates :amount, presence: true, numericality: { greater_than_or_equal_to: 0, less_than: 999_999_999_999.99}
+  validate :amount_decimal_validation
   validates :transaction_date, presence: true
   validate :transaction_date_is_valid_datetime
   validates :note, length: { maximum: 255 }
   validates :is_repeat, inclusion: { in: [true, false] }
+
+  def amount_decimal_validation
+    decimals = amount.to_s.split('.')
+    if decimals.size == 2 && decimals.last.size > 2
+      errors.add(:amount, "can't be more than 2 decimal places")
+    end
+  end
 
   def transaction_date_is_valid_datetime
     errors.add(:transaction_date, 'must be a valid datetime') if ((transaction_date.is_a?(Date) rescue ArgumentError) == ArgumentError)
