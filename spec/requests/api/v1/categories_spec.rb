@@ -20,7 +20,7 @@ RSpec.describe Api::V1::CategoriesController, type: :controller do
       @category_params[:is_income] = "123"
       post :create, params: {category: @category_params}
       expect(response).to have_http_status(:unprocessable_entity)      
-      expect(JSON.parse(response.body)['message']['category_name']).to eq(["is too long (maximum is 30 characters)"])
+      expect(JSON.parse(response.body)['message']['category_name'][0]).to eq("is too long (maximum is 30 characters)")
     end
     it 'does not create category without empty is_income' do
       @category_params[:is_income] = nil
@@ -54,7 +54,7 @@ RSpec.describe Api::V1::CategoriesController, type: :controller do
       @category_params[:category_name] = '1234567891234567891234567891234'
       put :update, params: {category: @category_params, id: category_id}
       expect(response).to have_http_status(:unprocessable_entity)
-      expect(JSON.parse(response.body)['message']['category_name']).to eq(["is too long (maximum is 30 characters)"])
+      expect(JSON.parse(response.body)['message']['category_name'][0]).to eq("is too long (maximum is 30 characters)")
     end
   end
   describe "DELETE #destroy" do

@@ -20,6 +20,12 @@ RSpec.describe Api::V1::Users::RegistrationsController, type: :controller do
       expect(JSON.parse(response.body)['message']['email']).to eq(["is invalid"])
       expect(ActionMailer::Base.deliveries.size).to eq(0)
     end
+    # TODO email validation хийх
+    it 'does not register a user with wrong email' do
+      @user_params[:email] = "myemail@email.com"
+      post :create, params: {api_v1_user: @user_params}
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
     it 'does not registers a user without email' do
       @user_params[:email] = nil
       post :create, params: {api_v1_user: @user_params}
@@ -27,11 +33,18 @@ RSpec.describe Api::V1::Users::RegistrationsController, type: :controller do
       expect(JSON.parse(response.body)['message']['email'][0]).to eq("can't be blank")
       expect(ActionMailer::Base.deliveries.size).to eq(0)
     end
-    it 'does not registers a user without valid first_name' do
+    it 'does not registers a user with long first_name' do
       @user_params[:first_name] = 'adhasdkjlfhkjasdhfkjsahdfasdfas'
       post :create, params: {api_v1_user: @user_params}
       expect(response).to have_http_status(:unprocessable_entity)
       expect(JSON.parse(response.body)['message']['first_name'][0]).to eq("is too long (maximum is 30 characters)")
+      expect(ActionMailer::Base.deliveries.size).to eq(0)
+    end
+    it 'does not registers a user with invalid name' do
+      @user_params[:first_name] = 'болд?@!'
+      post :create, params: {api_v1_user: @user_params}
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(JSON.parse(response.body)['message']['first_name'][0]).to eq("must only contain letters and hyphens.")
       expect(ActionMailer::Base.deliveries.size).to eq(0)
     end
   end

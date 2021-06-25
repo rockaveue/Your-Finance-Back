@@ -2,7 +2,7 @@ class Category < ApplicationRecord
   has_many :user_categories
   has_one :transactions
 
-  validates :category_name, presence: true, length: { maximum: 30 }
+  validates :category_name, presence: true, length: { maximum: 30 }, format: {with: /\A[a-z\u{0400}-\u{04FF} \-]*\z/i, message: "must only contain letters, spaces and hyphens."}
   validates :is_income, inclusion: { in: [ true, false ] }
   
   scope :is_default_and_not_deleted, -> { where(is_default: true, is_deleted: false)}
