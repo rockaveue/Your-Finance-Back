@@ -1,5 +1,4 @@
 require 'rails_helper'
-
 RSpec.describe Category, type: :model do
   it 'is valid with valid attributes' do
     category = build(:category)
@@ -8,6 +7,11 @@ RSpec.describe Category, type: :model do
   it 'is not valid without category_name' do
     category = build(:category)
     category.category_name = nil
+    expect(category).to_not be_valid
+  end
+  it 'is not valid without category_name' do
+    category = build(:category)
+    category.category_name = "boldoo$!@#"
     expect(category).to_not be_valid
   end
   it 'is not valid without is_income' do

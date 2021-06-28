@@ -19,7 +19,6 @@ Devise.setup do |config|
   # --------------------------------------------
   config.jwt do |jwt|
     jwt.secret = ENV['SECRET_KEY_BASE']
-    # jwt.secret = "012345678901234567890123456789"
     jwt.request_formats = { user: [:json] }
     jwt.dispatch_requests = [
       ['POST', %r{^/login$}]
@@ -27,7 +26,7 @@ Devise.setup do |config|
     jwt.revocation_requests = [
       ['DELETE', %r{^/logout$}]
     ]
-    jwt.expiration_time = 4.hours.to_i
+    jwt.expiration_time = 5.minutes.to_i
   end
   # --------------------------------------------
   # ==> Controller configuration
@@ -44,22 +43,6 @@ Devise.setup do |config|
   # config.mailer = 'Devise::Mailer'
   config.mailer = 'PasswordMailer'
 
-  # config.action_mailer.default_url_options = { :host => 'localhost:3000' }
-  # config.action_mailer.delivery_method = :smtp
-  # config.action_mailer.perform_deliveries = true
-  # config.action_mailer.raise_delivery_errors = true
-  # config.action_mailer.default :charset => "utf-8"
-  
-  
-  # ActionMailer::Base.smtp_settings = {
-  #   :address => "smtp.gmail.com",
-  #   :port => 587,
-  #   :authentication => :plain,
-  #   :domain => "gmail.com",
-  #   :user_name => ENV["EMAIL"],
-  #   :password => ENV["EMAIL_PASSWORD"],
-  #   enable_starttls_auto: true
-  # }
   # Configure the parent class responsible to send e-mails.
   # config.parent_mailer = 'ActionMailer::Base'
   

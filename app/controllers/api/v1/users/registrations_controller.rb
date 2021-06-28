@@ -12,13 +12,10 @@ class Api::V1::Users::RegistrationsController < Devise::RegistrationsController
     end
   end
   private
-
   def register_success
     render json: { message: 'Signed in successfully.' }
   end
-
-
   def sign_up_params
-      params.require(:api_v1_user).permit(:email, :password, :last_name, :first_name)
+    params.require(:api_v1_user).permit(:email, :password, :last_name, :first_name)
   end
 end

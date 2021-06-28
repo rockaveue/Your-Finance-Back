@@ -1,6 +1,5 @@
 require 'rails_helper'
 
-
 RSpec.describe Api::V1::TransactionsController, type: :controller do
   @controller = Api::V1::TransactionsController.new
   before :each do
@@ -84,10 +83,4 @@ RSpec.describe Api::V1::TransactionsController, type: :controller do
       expect(response).to have_http_status(:success)
     end
   end
-end
-
-def authenticated_header(user)
-  token = Warden::JWTAuth::UserEncoder.new.call(user, :api_v1_user, nil).first
-  return "Bearer #{token}"
-  # request.headers['Authorization'] = "Bearer #{token}"
 end

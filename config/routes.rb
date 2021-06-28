@@ -14,9 +14,8 @@ Rails.application.routes.draw do
           registrations: 'api/v1/users/registrations',
           passwords: 'api/v1/users/passwords',
         }
-      # resources :sessions, only: [:create, :destroy]
-      # resources :registrations, only: [:create, :destroy]
       resource :users, except: :index do
+        patch :update_password
         resources :transactions do
           collection do
             post :getTransactionsByParam
@@ -28,9 +27,6 @@ Rails.application.routes.draw do
             post :getCategory
             post :getCategoryAmountByParam
           end
-        end
-        member do
-          patch :update_password
         end
       end
       get 'defaultCategory', to: 'categories#defaultAllCategory'

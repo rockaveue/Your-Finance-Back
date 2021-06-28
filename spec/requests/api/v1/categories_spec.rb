@@ -30,8 +30,7 @@ RSpec.describe Api::V1::CategoriesController, type: :controller do
     end
   end
   describe "PUT #update" do
-    it 'updates category' do
-      # Шинээр үүсгэсэн категороо өөрчлөхийг шалгах
+    it 'updates category' do=
       post :create, params: {category: @category_params}
       category_id = JSON.parse(response.body)['id']
       @category_params[:category_name] = 'edited name'
@@ -39,8 +38,7 @@ RSpec.describe Api::V1::CategoriesController, type: :controller do
       expect(response).to have_http_status(:success)
       expect(JSON.parse(response.body)['category_name']).to eq('edited name')
     end
-    it 'does not update with empty params' do
-      # Шинээр үүсгэсэн категороо өөрчлөхийг шалгах
+    it 'does not update with empty params' do=
       post :create, params: {category: @category_params}
       category_id = JSON.parse(response.body)['id']
       @category_params[:category_name] = ''

@@ -1,17 +1,14 @@
 
 class Api::V1::TransactionsController < ApplicationController
-
   before_action :transaction_authorization, only: [:show, :update, :destroy]
-  # GET /users/:user_id/transactions
+  # GET /users/transactions
   # Хэрэглэгчийн бүх гүйлгээ авах
   def index
-    # Pagy::VARS[:items]  = 2
     transactions = Transaction
       .getTransactions(transactions_analyse_params, 5, current_api_v1_user.id)
     render json: transactions
   end
-
-  # GET /users/:user_id/transaction/:id
+  # GET /users/transaction/:id
   # Хэрэглэгчийн гүйлгээ сонгох
   def show
     user = User.find(current_api_v1_user.id)
@@ -22,8 +19,7 @@ class Api::V1::TransactionsController < ApplicationController
       render json: {message: transaction.errors}, status: 422
     end
   end
-
-  # POST /users/:user_id/transaction
+  # POST /users/transaction
   # Гүйлгээ нэмэх
   def create
     user = User.find(current_api_v1_user.id)
@@ -48,8 +44,7 @@ class Api::V1::TransactionsController < ApplicationController
       end
     end
   end
-
-  # PUT /users/:user_id/transaction/:id
+  # PUT /users/transaction/:id
   # Хэрэглэгчийн гүйлгээ өөрчлөх
   def update
     user = User.find(current_api_v1_user.id)
@@ -61,7 +56,6 @@ class Api::V1::TransactionsController < ApplicationController
         user = User.find(current_api_v1_user.id)
         # хэрэглэгчийн баланс
         user_balance = user.balance
-        # хуучин төрөл болон дүн
         # хуучин төрөл шинэ төрөлтэй ижил байвал
         if params[:is_income].present?
           if last_type == params[:is_income]
@@ -86,8 +80,7 @@ class Api::V1::TransactionsController < ApplicationController
       end
     end
   end
-
-  # DELETE /users/:user_id/transaction/:id
+  # DELETE /users/transaction/:id
   # Хэрэглэгчийн гүйлгээ устгах
   def destroy
     user = User.find(current_api_v1_user.id)
@@ -98,7 +91,6 @@ class Api::V1::TransactionsController < ApplicationController
       else
         user.update(balance: user.balance + transaction.amount)
       end
-      
       if transaction.update(is_deleted: true)
         render json: {message: "transaction is deleted", transaction: transaction}
       else
@@ -106,8 +98,7 @@ class Api::V1::TransactionsController < ApplicationController
       end
     end
   end
-
-  # POST /users/:user_id/transactions/getTransactionsByBetweenDate
+  # POST /users/transactions/getTransactionsByBetweenDate
   # Хоёр он сарын хоорондох гүйлгээн мэдээлэл
   def getTransactionsByParam
     transactions = Transaction
@@ -121,22 +112,20 @@ class Api::V1::TransactionsController < ApplicationController
     grouped_expense = Transaction
       .group_by_date(expense)
     total_expense = Transaction
-    .map_inject_amount(grouped_expense)
+      .map_inject_amount(grouped_expense)
     render json: {
       income: [grouped_income, [{total_amount:total_income}]],
       expense: [grouped_expense, [{total_amount:total_expense}]],
       transactions: transactions
     }
   end
-
-  # POST /users/:user_id/transactions/getTransactionsByDate
+  # POST /users/transactions/getTransactionsByDate
   # Оруулсан он сар дахь гүйлгээний мэдээлэл
   def getTransactionsByDate
     transactions = Transaction
       .getTransactions(transactions_analyse_params, 5, current_api_v1_user.id)
     render json: transactions
   end
-
   private
   def transaction_params
       params.require(:transaction).permit(:user_id, :category_id, :is_income, :transaction_date, :amount, :is_repeat, :note)

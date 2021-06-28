@@ -1,15 +1,13 @@
 class Api::V1::CategoriesController < ApplicationController
-
   before_action :category_authorization, only: [:update, :destroy]
   before_action :validate_analyze_params, only: :getCategoryAmountByParam
-  # GET users/:user_id/transactions/:transactions_id/categories
+  # GET users/transactions/:transactions_id/categories
   # Гүйлгээний категор авах
   def transactionCategory
     transaction = Transaction.find(params[:transaction_id])
     category = Category.find(transaction.category_id)
     render json: category
   end
-
   # GET /default_category
   # Default Category авах
   def defaultAllCategory
@@ -22,8 +20,7 @@ class Api::V1::CategoriesController < ApplicationController
       expense: expense
     }
   end
-  
-  # POST users/:user_id/categories/getCategory
+  # POST users/categories/getCategory
   # Хэрэглэгчийн категор авах, төрөл тусгавал төрлөөр авах
   def getCategory
     categories = Category
@@ -32,11 +29,9 @@ class Api::V1::CategoriesController < ApplicationController
       .is_default_and_not_deleted
     income, expense = Transaction
       .partition_by_is_income(default_category)
-    
     render json: {user: categories, default: [income, expense]}
   end
-
-  # POST users/:user_id/categories
+  # POST users/categories
   # Категор нэмэх
   def create
     ActiveRecord::Base.transaction do
@@ -61,8 +56,7 @@ class Api::V1::CategoriesController < ApplicationController
       end
     end
   end
-
-  # PUT /users/:user_id/categories/:id
+  # PUT /users/categories/:id
   # Категор өөрчлөх
   def update
     category = Category.find(params[:id])
@@ -77,8 +71,7 @@ class Api::V1::CategoriesController < ApplicationController
       render json: {message: "Duplicate category name"}, status: 422
     end
   end
-
-  # DELETE /users/:user_id/categories/:id
+  # DELETE /users/categories/:id
   # Категор устгах
   def destroy
     category = Category.find(params[:id])
@@ -97,14 +90,8 @@ class Api::V1::CategoriesController < ApplicationController
       end
     end
   end
-
-  # POST /users/:user_id/getCategoryAmountByDate
-  # Оруулсан он сараар нийт дүнг ангиллаар авах
-  # :transaction_date param оруулна
-  # Хоёр он сарын хоорондох гүйлгээн дүнг ангиллаар авах
-  # :date_from, :date_to оруулах
-  # Өдрөөр нийт дүнг ангиллаар авах
-  # :number_of_days оруулах
+  # POST /users/getCategoryAmountByDate
+  # Param-аар нийт дүнг ангиллаар авах
   def getCategoryAmountByParam
     transactions = Transaction
       .getTransactions(category_analyse_params, 4, current_api_v1_user.id)
@@ -119,9 +106,7 @@ class Api::V1::CategoriesController < ApplicationController
       expense: expense
     }
   end
-  
   private
-
   def category_params       
     params.require(:category).permit(:category_name, :is_income)
   end

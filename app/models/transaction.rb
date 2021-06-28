@@ -1,7 +1,6 @@
 class Transaction < ApplicationRecord
   belongs_to :category
   belongs_to :user
-
   validates :category, presence: true
   validates :user, presence: true
   validates :is_income, inclusion: { in: [ true, false ] }
@@ -18,11 +17,9 @@ class Transaction < ApplicationRecord
       errors.add(:amount, "can't be more than 2 decimal places")
     end
   end
-
   def transaction_date_is_valid_datetime
     errors.add(:transaction_date, 'must be a valid datetime') if ((transaction_date.is_a?(Date) rescue ArgumentError) == ArgumentError)
   end
-
   def self.getTransactions(param, selected, user_id)
     query = joins(:category)
       .where(:user_id => user_id)
@@ -51,15 +48,12 @@ class Transaction < ApplicationRecord
       query = query.select('transactions.id, user_id, transactions.is_income, transaction_date, amount, is_repeat, note, category_name')
       selected = nil
     end
-
     if !selected.nil?
       query = query.as_json(:except => :id)
     end
     
     return query
   end
-
-
   # Өдрөөр ангилан өдөр болон нийт дүнг бодох
   def self.group_by_date(transaction)
     transaction = transaction
