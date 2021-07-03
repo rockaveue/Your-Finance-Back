@@ -30,7 +30,7 @@ RSpec.describe Api::V1::CategoriesController, type: :controller do
     end
   end
   describe "PUT #update" do
-    it 'updates category' do=
+    it 'updates category' do
       post :create, params: {category: @category_params}
       category_id = JSON.parse(response.body)['id']
       @category_params[:category_name] = 'edited name'
@@ -38,7 +38,7 @@ RSpec.describe Api::V1::CategoriesController, type: :controller do
       expect(response).to have_http_status(:success)
       expect(JSON.parse(response.body)['category_name']).to eq('edited name')
     end
-    it 'does not update with empty params' do=
+    it 'does not update with empty params' do
       post :create, params: {category: @category_params}
       category_id = JSON.parse(response.body)['id']
       @category_params[:category_name] = ''
@@ -120,4 +120,8 @@ RSpec.describe Api::V1::CategoriesController, type: :controller do
       expect(JSON.parse(response.body)['user']).to eq([])
     end
   end
+end
+def authenticated_header(user)
+  token = Warden::JWTAuth::UserEncoder.new.call(user, :api_v1_user, nil).first
+  return "Bearer #{token}"
 end
