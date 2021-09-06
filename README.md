@@ -1,24 +1,20 @@
-# README
+# Your-Finance-Back
+REST back-end of finance managing app
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Front end URL - https://your-finance-13d64.web.app/
 
-Things you may want to cover:
+Documentation URL - https://documenter.getpostman.com/view/15854734/TzeUoUYa
+## Features
+* Devise
+* Devise-jwt
+* mysql
 
-* Ruby version
+### for testing
+* faker
+* rspec
+* factory-bot
+* shoulda-matchers
 
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+### deploy
+* deployed on heroku 
+* database - heroku plugin clearDB
